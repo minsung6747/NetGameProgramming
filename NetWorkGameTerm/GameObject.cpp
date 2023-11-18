@@ -275,11 +275,6 @@ void Bomb::SetPosition()
             bomb[i].MaxTransY = dis_y(gen) / 10.;
             bomb[i].transY = bomb[i].MaxTransY;
             bomb[i].transY_aoc = dis0(gen) / 100.;
-            if (pow(10, 2) < pow(bomb[i].transZ - 10, 2) + pow(bomb[i].transX - 10, 2)) {
-                GameObject* temp = NULL;
-                memcpy(&bomb[i], &temp, sizeof bomb[i]);
-                delete temp;
-            }
         }
     }
 }
