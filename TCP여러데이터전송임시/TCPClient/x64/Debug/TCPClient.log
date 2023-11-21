@@ -1,3 +1,0 @@
-﻿  TCPClient.cpp
-C:\Users\mi_in\OneDrive\바탕 화면\새 폴더 (5)\TCP여러데이터전송임시\TCP여러데이터전송임시\TCPClient\TCPClient.cpp(38,6): warning C4101: 'len' :참조되지 않은 지역 변수입니다.
-  TCPClient.vcxproj -> C:\Users\mi_in\OneDrive\바탕 화면\새 폴더 (5)\TCP여러데이터전송임시\TCP여러데이터전송임시\TCPClient\x64\Debug\TCPClient.exe
