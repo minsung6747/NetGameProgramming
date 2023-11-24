@@ -599,21 +599,34 @@ int main(int argc, char* argv[])
     printf("playername 전송 완료\n");
     
     int iForReady = 0;
-    printf("Are you Ready For Playing Game??!\n");
-    printf("Press 1 or 2 (1:Ready 2:Not Ready)\n");
-    //scanf("%d", &iForReady);
+
+    // 입력값이 1일 때까지 반복
+    while (iForReady != 1)
+    {
+        printf("Press 1 to ready\n");
+        scanf("%d", &iForReady);
+    }
  
-    //// Ready 상태를 서버에 전송
-    //if (iForReady == 1) {
-    //    const char* readyMessage = "Ready";
-    //    retval = send(sock1, readyMessage, (int)strlen(readyMessage), 0);
-    //    if (retval == SOCKET_ERROR) {
-    //        err_display("send()");
-    //        return 1;
-    //    }
-    //    printf("Ready 상태를 서버에 전송했습니다.\n");
-    //}
-	 glutInit(&argc, argv);
+    // Ready 상태를 서버에 전송
+    const char* readyMessage = "Ready";
+    retval = send(sock2, readyMessage, (int)strlen(readyMessage), 0);
+    if (retval == SOCKET_ERROR) {
+        err_display("send()");
+        return 1;
+    }
+    printf("Ready 상태를 서버에 전송했습니다.\n");
+
+    // 게임 시작 여부
+    bool bgamestart = false; 
+
+    while (!bgamestart)
+    {
+        // 게임 시작시까지 대기한다
+    }
+
+    // ----- 게임 시작 -----
+
+	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowPosition(0, 0);
     glutInitWindowSize(width, height);
@@ -646,10 +659,6 @@ int main(int argc, char* argv[])
     glutTimerFunc(5, Timer, 1);
     glutMainLoop();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	
-
-	
 
 	char playersize[BUFSIZE + 1] = "100m";
 
