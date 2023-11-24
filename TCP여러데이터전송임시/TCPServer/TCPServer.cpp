@@ -4,6 +4,9 @@
 #define BUFSIZE    512
 
 #define MAXPLAYERDATANUM 10 // 최대 플레이어 데이터 개수 (동시접속 수 아님)
+#define NEEDPLAYERNUM    3  // 필요한 플레이어 수
+
+
 char playerdatas[MAXPLAYERDATANUM][10][BUFSIZE + 1] = {}; // 플레이어 데이터 저장
 
 // -------------- 데이터 통신에 사용할 변수 --------------
@@ -14,10 +17,13 @@ int addrlen;
 
 char received_data[BUFSIZE + 1];
 
-char saved_data[10][BUFSIZE + 1];
+char ready_data[MAXPLAYERDATANUM][2]; // 레디 여부 저장
+char saved_data[MAXPLAYERDATANUM][BUFSIZE + 1];
+
 int now_received_data_num = 0;
 
 int iCountReady = 0;
+
 // -------------- addClient() 함수 --------------
 
 int addClient(char* name, char* playersize)
@@ -57,7 +63,7 @@ bool checkIfDataExist()
 	for (int i = 0; i < MAXPLAYERDATANUM; i++)
 	{
 		// 데이터가 없다면
-		if (playerdatas[i][0] == "")
+		if (strcmp(playerdatas[i][0], "") == 0)
 		{
 			// 루프에서 나간다
 			break;
@@ -95,12 +101,11 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	return 0;
 }
 
-void RecvReadyFromClient(SOCKET listen_sock, int retval, int num)
+void RecvReadyFromClient(SOCKET listen_sock, int retval, int playernum)
 {
 	printf("RecvReadyFromClient() 함수가 실행되었습니다.\n");
 	printf("클라이언트 ReadyMessage를 받습니다.\n");
 	
-
 	// accept()
 	addrlen = sizeof(clientaddr);
 	client_sock = accept(listen_sock, (struct sockaddr*)&clientaddr, &addrlen);
@@ -109,8 +114,22 @@ void RecvReadyFromClient(SOCKET listen_sock, int retval, int num)
 		return;
 	}
 
-	
+	// 임시 Handle Create
+	HANDLE hThread;
+
+	// 스레드 생성
+	hThread = CreateThread(NULL, 0, ProcessClient,
+		(LPVOID)client_sock, 0, NULL);
+
+	// 접속한 클라이언트 정보 출력
+	char addr[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
+	printf("[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
+		addr, ntohs(clientaddr.sin_port));
+
 	retval = recv(client_sock, received_data, BUFSIZE, 0);
+
+	printf("Ready 정보 recv 완료\n");
 
 	if (retval == SOCKET_ERROR) {
 		err_display("recv()");
@@ -119,14 +138,21 @@ void RecvReadyFromClient(SOCKET listen_sock, int retval, int num)
 	else if (retval == 0)
 		return;
 
-	
-	
-	
+	// 받은 데이터를 ready_data의 해당하는 위치에 넣는다
+	received_data[retval] = '\0';
+	strcpy(ready_data[playernum], received_data);
+
+	// 소켓 닫기
+	closesocket(client_sock);
+	printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
+		addr, ntohs(clientaddr.sin_port));
+
+	printf("RecvReadyFromClient() 함수가 종료되었습니다\n\n");
 }
 
 // recvDataFromSocket() 함수
 
-void RecvDataFromClient(SOCKET listen_sock, int retval, int num)
+void RecvDataFromClient(SOCKET listen_sock, int retval, int playernum)
 {
 	printf("RecvDataFromClient() 함수가 실행되었습니다\n");
 	printf("클라이언트의 Send()를 기다리고 있습니다\n");
@@ -164,7 +190,7 @@ void RecvDataFromClient(SOCKET listen_sock, int retval, int num)
 
 	// 받은 데이터를 saved_data의 해당하는 위치에 넣는다
 	received_data[retval] = '\0';
-	strcpy(saved_data[num], received_data);
+	strcpy(saved_data[playernum], received_data);
 
 	// 소켓 닫기
 	closesocket(client_sock);
@@ -205,19 +231,12 @@ int main(int argc, char* argv[])
 
 	printf("[게임 서버를 열었습니다]\n\n");
 
-	// ### 테스트용 (1번째 플레이어 데이터 미리 저장)
-	strcpy(playerdatas[0][0], "testname");
-	strcpy(playerdatas[0][1], "testsizefdf");
-
 	// 현재 플레이어 번호
-	int playernum = 2;
-
+	int iplayernum = 1;
 	
 	// 클라이언트로부터 데이터를 가져와 0번 위치에 저장한다
 	RecvDataFromClient(listen_sock, retval, 0);
 	printf("플레이어 이름 데이터 가져오기 완료\n");
-
-
 
 	// 이름이 저장되어 있는지 확인
 	bool bDataExist = checkIfDataExist();
@@ -229,36 +248,47 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			printf("서버에 해당 이름을 추가하였습니다\n\n");
+			printf("서버에 %d번째 플레이어 이름을 추가하였습니다\n\n", iplayernum);
 
 			// 클라이언트로부터 크기 데이터를 가져와 1번 위치에 저장한다
-			RecvDataFromClient(listen_sock, retval, 1);
-			printf("플레이어 크기 데이터 가져오기 완료\n");
+			// RecvDataFromClient(listen_sock, retval, 1);
+			// printf("%d번째 플레이어 크기 데이터 가져오기 완료\n", iplayernum);
 
 			// 데이터를 playerdatas[]의 현재 플레이어 위치에 저장한다
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 1; i++)
 			{
-				strcpy(playerdatas[playernum - 1][i], saved_data[i]);
+				strcpy(playerdatas[iplayernum - 1][i], saved_data[i]);
 			}
+
+			// 플레이어 데이터 받아올 위치를 다음으로 이동
+			iplayernum++;
 		}
-	
-	
-	
 
+	printf("플레이어 데이터 가져오기 완료\n\n");
+	
+	// 플레이어의 레디 데이터를 받는다
+	RecvReadyFromClient(listen_sock, retval, 0);
+	
+	printf("Ready 데이터 수신 완료\n");
 
-	// 테스트용
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < NEEDPLAYERNUM; i++)
+	{
+		if (strcmp(ready_data[i], "Ready") == 0) printf("%d번째 플레이어 : 준비됨\n", i + 1);
+		else printf("%d번째 플레이어 : 준비 안 됨\n", i + 1);
+	}
+
+	// ### 테스트용 : 플레이어 데이터 출력
+	for (int i = 0; i < NEEDPLAYERNUM; i++)
 	{
 		printf("\n[%d번째 플레이어 데이터]\n", i + 1);
 		printf("플레이어 이름 : %s\n", playerdatas[i][0]);
-		printf("플레이어 크기 : %s\n", playerdatas[i][1]);
+		// printf("플레이어 크기 : %s\n", playerdatas[i][1]);
 	}
-
 
 	// 소켓 닫기
 	closesocket(listen_sock);
 
-	printf("[게임 서버를 닫았습니다]\n\n");
+	printf("\n[게임 서버를 닫았습니다]\n\n");
 
 	// 윈속 종료
 	WSACleanup();
