@@ -1,7 +1,11 @@
 /TCP여러데이터전송임시/TCPClient/.vs 
 /TCP여러데이터전송임시/TCPServer/.vs 
 /TCP여러데이터전송임시/TCPClient/x64 
-/TCP여러데이터전송임시/TCPServer/x64 
+/TCP여러데이터전송임시/TCPServer/x64
+/TermProject/TCPClient/.vs 
+/TermProject/TCPServer/.vs 
+/TermProject/TCPClient/x64 
+/TermProject/TCPServer/x64  
 *.exe 
 *.ilk 
 *.pdb 
