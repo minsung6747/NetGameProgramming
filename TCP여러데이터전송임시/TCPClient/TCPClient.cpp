@@ -238,8 +238,8 @@ void Motion(int x, int y)
     {
         MH.delta_mouse_x = MH.mouse_x - MH.first_mouse_pos_x;
         MH.delta_mouse_y = MH.mouse_y - MH.first_mouse_pos_y;
-      /*  CO.camera_drgree_x += MH.delta_mouse_x / (width / 2);
-        CO.camera_drgree_y += MH.delta_mouse_y / (height / 2);*/
+        //CO.camera_drgree_x += MH.delta_mouse_x / (width / 2);
+        //CO.camera_drgree_y += MH.delta_mouse_y / (height / 2);
     }
 }
 void MouseChange(int x, int y) {
