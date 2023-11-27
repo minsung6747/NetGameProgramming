@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "GameObject.h"
+#include "Camera.h"
+
+Camera CO;
 
 GameObject::GameObject()
 {
@@ -260,6 +263,18 @@ GLvoid Gemstone::Reset()
     ore = NULL;
 }
 
+GLvoid Gemstone::UpdateBoundingBox()
+{
+    for (int i = 0;i < 3;++i) {
+        ore[i].m_bbBox.m_fMaxX = ore[i].transX + 0.1f;
+        ore[i].m_bbBox.m_fMinX = ore[i].transX - 0.1f;
+        ore[i].m_bbBox.m_fMaxY = ore[i].transY + 0.1f;
+        ore[i].m_bbBox.m_fMinY = ore[i].transY - 0.1f;
+        ore[i].m_bbBox.m_fMaxZ = ore[i].transZ + 0.1f;
+        ore[i].m_bbBox.m_fMinZ = ore[i].transZ - 0.1f;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Bomb::SetPosition()
@@ -341,6 +356,18 @@ GLvoid Bomb::Bomb_Mat(GameShader* gs)
             glUniform4f(objColorLocation, 0.1f, 0.1f, 0.1f, 1.0);
             gluCylinder(gs->qobj, 0.05f, 0.05f, 0.1f, 8, 2);
         }
+    }
+}
+
+GLvoid Bomb::UpdateBoundingBox()
+{
+    for (int i = 0;i < 50;++i) {
+        bomb[i].m_bbBox.m_fMaxX = bomb[i].transX + 0.1f;
+        bomb[i].m_bbBox.m_fMinX = bomb[i].transX - 0.1f;
+        bomb[i].m_bbBox.m_fMaxY = bomb[i].transY + 0.1f;
+        bomb[i].m_bbBox.m_fMinY = bomb[i].transY - 0.1f;
+        bomb[i].m_bbBox.m_fMaxZ = bomb[i].transZ + 0.1f;
+        bomb[i].m_bbBox.m_fMinZ = bomb[i].transZ - 0.1f;
     }
 }
 
@@ -488,3 +515,255 @@ GLvoid Bubble::Bubble_Mat(GameShader* gs)
         }
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GamePlayer::GamePlayer()
+{
+    subMarine = new GameObject;
+    subMarine->transX = 10.f;
+    subMarine->transY = 1.f;
+    subMarine->transZ = 10.f;
+}
+
+GamePlayer::~GamePlayer()
+{
+}
+
+GLvoid GamePlayer::subMarine_Catch()
+{
+}
+
+GLvoid GamePlayer::Draw_SubMarine(GameShader* gs)
+{
+
+    glm::mat4 Body = glm::mat4(1.0f);
+    Body = glm::translate(Body, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Body = glm::translate(Body, glm::vec3(0.f, 0.f, 0.0f));
+    Body = glm::rotate(Body, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    //Body = glm::rotate(Body, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Body = glm::scale(Body, glm::vec3(0.2f, 0.2f, 0.3f));
+    unsigned int HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Body));
+    int objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    unsigned isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 0.8f, 0.8f, 0.8f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Head = glm::mat4(1.0f);
+    Head = glm::translate(Head, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Head = glm::translate(Head, glm::vec3(0.f, 0.f, 0.0f));
+    Head = glm::rotate(Head, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Head = glm::scale(Head, glm::vec3(0.2f, 0.2f, 0.2f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Head));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 0.8f, 0.8f, 0.8f, 1.0);
+    gluSphere(gs->qobj, 1.0, 20, 20);
+
+    glm::mat4 Tail = glm::mat4(1.0f);
+    Tail = glm::translate(Tail, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Tail = glm::rotate(Tail, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    //Tail = glm::rotate(Tail, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Tail = glm::translate(Tail, glm::vec3(0.f, 0.f, 0.6f));
+    Tail = glm::scale(Tail, glm::vec3(0.2f, 0.2f, 0.2f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Tail));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 0.8f, 0.8f, 0.8f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 0.0, 2.0, 20, 8);
+
+    glm::mat4 Wing = glm::mat4(1.0f);
+    Wing = glm::translate(Wing, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Wing = glm::rotate(Wing, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Wing = glm::rotate(Wing, glm::radians(rot_t), glm::vec3(0.0f, 0.0f, 1.0f));
+    Wing = glm::translate(Wing, glm::vec3(0.f, 0.f, 0.9f));
+    Wing = glm::scale(Wing, glm::vec3(0.3f, 0.005f, 0.05f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Wing));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    Wing = glm::mat4(1.0f);
+    Wing = glm::translate(Wing, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Wing = glm::rotate(Wing, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Wing = glm::rotate(Wing, glm::radians(rot_t), glm::vec3(0.0f, 0.0f, 1.0f));
+    Wing = glm::rotate(Wing, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
+    Wing = glm::translate(Wing, glm::vec3(0.f, 0.f, 0.9f));
+    Wing = glm::scale(Wing, glm::vec3(0.3f, 0.005f, 0.05f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Wing));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Grab_Arm_Body = glm::mat4(1.0f);
+    Grab_Arm_Body = glm::translate(Grab_Arm_Body, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm_Body = glm::rotate(Grab_Arm_Body, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Body = glm::translate(Grab_Arm_Body, glm::vec3(0.f, -0.2f, 0.f));
+    Grab_Arm_Body = glm::scale(Grab_Arm_Body, glm::vec3(0.05f, 0.05f, 0.05f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm_Body));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluSphere(gs->qobj, 1.0, 20, 20);
+
+    glm::mat4 Grab_Arm = glm::mat4(1.0f);
+    Grab_Arm = glm::translate(Grab_Arm, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, -0.2f, 0.05f));
+    Grab_Arm = glm::rotate(Grab_Arm, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, 0.2f, -0.05f));
+    Grab_Arm = glm::rotate(Grab_Arm, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm = glm::rotate(Grab_Arm, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, -0.2f, 0.05f));
+    Grab_Arm = glm::scale(Grab_Arm, glm::vec3(0.03f, 0.03f, 0.1f + subMarine->scaleZ));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Grab_Arm_Finger1 = glm::mat4(1.0f);
+    Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(0.f, -0.2f, -0.25f + subMarine->transZ_aoc));
+    Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger1 = glm::scale(Grab_Arm_Finger1, glm::vec3(0.03f, 0.005f, 0.09f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm_Finger1));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Grab_Arm_Finger2 = glm::mat4(1.0f);
+    Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(0.f, -0.2f, -0.25f + subMarine->transZ_aoc));
+    Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger2 = glm::scale(Grab_Arm_Finger2, glm::vec3(0.03f, 0.005f, 0.09f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm_Finger2));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Grab_Arm_Finger3 = glm::mat4(1.0f);
+    Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(0.f, -0.2f, -0.25f + subMarine->transZ_aoc));
+    Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
+    Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger3 = glm::scale(Grab_Arm_Finger3, glm::vec3(0.03f, 0.005f, 0.09f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm_Finger3));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+
+    glm::mat4 Grab_Arm_Finger4 = glm::mat4(1.0f);
+    Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(subMarine->transX, subMarine->transY, subMarine->transZ));
+    Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(0.f, -0.2f, -0.25f + subMarine->transZ_aoc));
+    Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(-90.f), glm::vec3(0.0f, 0.0f, 1.0f));
+    Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Grab_Arm_Finger4 = glm::scale(Grab_Arm_Finger4, glm::vec3(0.03f, 0.005f, 0.09f));
+    HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
+    glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm_Finger4));
+    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
+    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
+    gs->qobj = gluNewQuadric();
+    gluQuadricDrawStyle(gs->qobj, GLU_FILL);
+    glUniform1f(isCheck, false);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0);
+    gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
+}
+
+GLvoid GamePlayer::Draw_Map(GameShader* gs)
+{
+    glViewport(1050, 550, 150, 150);
+    glm::vec3 cameraPos = glm::vec3(subMarine->transX, 5.0f, subMarine->transZ);         //위치
+    glm::vec3 cameraDirection = glm::vec3(subMarine->transX, 0.0f, subMarine->transZ);   //바라보는 방향
+    glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, -10.0f);         //카메라 상향
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+
+    unsigned int viewLocation = glGetUniformLocation(gs->s_program, "view");
+    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 50.0f);
+    projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0));
+    unsigned int projectionLocation = glGetUniformLocation(gs->s_program, "projection");
+    glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
+}
+
+GLvoid GamePlayer::Draw_Camera(GameShader* gs)
+{
+    glViewport(0, 0, width, height);
+    glm::vec3 cameraPos = glm::vec3(subMarine->transX, subMarine->transY + 1.5f, subMarine->transZ); //--- 카메라 위치
+    glm::vec3 cameraDirection = glm::vec3(subMarine->transX, 0.3f, subMarine->transZ - 5); //--- 카메라 바라보는 방향
+    glm::vec3 cameraUp = glm::vec3(0.0f, 4.0f, 0.0f); //--- 카메라 위쪽 방향
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+    view = glm::translate(view, glm::vec3(subMarine->transX, subMarine->transY + 1.0f, subMarine->transZ));
+    view = glm::rotate(view, glm::radians(CO.camera_drgree_y), glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::rotate(view, glm::radians(CO.camera_drgree_x), glm::vec3(0.0f, 1.0f, 0.0f));
+    view = glm::translate(view, glm::vec3(-subMarine->transX, -subMarine->transY - 1.0f, -subMarine->transZ));
+
+    unsigned int viewLocation = glGetUniformLocation(gs->s_program, "view"); //--- 뷰잉 변환 설정
+    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 50.0f);
+    projection = glm::translate(projection, glm::vec3(0.0, 0.0, -5.0));
+    unsigned int projectionLocation = glGetUniformLocation(gs->s_program, "projection");
+    glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
+}
+

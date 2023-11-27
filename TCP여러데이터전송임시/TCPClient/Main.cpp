@@ -1,17 +1,17 @@
 #include "stdafx.h"
-#include "Camera.h"
 #include "GameShader.h"
 #include "GameObject.h"
 
 random_device rd;
 mt19937 gen{ rd() };
 
-Camera CO;
+//Camera CO;
 GameShader* gs = new GameShader;
 Background* bg = new Background();
 Gemstone* wp_Gemstone = new Gemstone();
 Bomb* wp_Bomb = new Bomb();
 Bubble* wp_Bubble = new Bubble();
+
 //alstkdalsdl0
 GLvoid drawScene();
 GLvoid KeyBoard(unsigned char, int, int);
