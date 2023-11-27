@@ -161,6 +161,8 @@
     <ClInclude Include="GamePlayer.h" />
     <ClInclude Include="GameShader.h" />
     <ClInclude Include="MainLoop.h" />
+    <ClInclude Include="PacketNumber.h" />
+    <ClInclude Include="PacketStruct.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="UserInterface.h" />
   </ItemGroup>

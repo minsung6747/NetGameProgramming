@@ -4,11 +4,17 @@
 #include "GameShader.h"
 #include "GameObject.h"
 #include <GL/glew.h>
-
+#include <iostream>
 char* SERVERIP = (char*)"127.0.0.1";
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
+using namespace std;
+struct ClientInfo {
+    SOCKET socket;
+    bool bisLoggedIn;
+    
+};
 
 random_device rd;
 mt19937 gen{ rd() };
@@ -551,6 +557,18 @@ GLvoid Timer(int value)
     glutPostRedisplay();
     glutTimerFunc(5, Timer, 1);
 }
+
+
+void SendNameToServer(SOCKET clientSocket) {
+    char clientName[256];
+    printf("Input Name: ");
+    fgets(clientName, sizeof(clientName), stdin);
+    clientName[strcspn(clientName, "\n")] = '\0';  
+
+    // 입력받은 이름을 서버에 전송
+    send(clientSocket, clientName, strlen(clientName), 0);
+}
+
 int main(int argc, char* argv[])
 {
     int retval;
@@ -568,9 +586,6 @@ int main(int argc, char* argv[])
   
     if (sock == INVALID_SOCKET) err_quit("socket()");
     
-
-
-
     // connect()
     struct sockaddr_in serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
@@ -580,7 +595,8 @@ int main(int argc, char* argv[])
 
     retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
     if (retval == SOCKET_ERROR) err_quit("connect()");
- 
+    ////////////////////////////
+    SendNameToServer(sock);        //서버에 이름을 보낸다.
 
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);

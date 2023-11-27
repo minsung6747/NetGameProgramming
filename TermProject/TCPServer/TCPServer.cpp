@@ -1,7 +1,44 @@
 #include "..\Common.h"
+#include <vector>
+#include <string>
+#include <iostream>
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
+
+using namespace std;
+
+struct ClientInfo {
+	SOCKET socket;
+	bool BIsLoggedIn;
+	string sName;
+	
+};
+
+vector<ClientInfo> ClientList;
+
+
+void StartGame() {
+
+}
+ 
+void HandleLogin(SOCKET clientSocket, const string& clientName) {
+	//클라이언트 한명이 로그인 하게되면,로그인상태로만든다.그리고 Vector Push 
+	ClientInfo newClient;
+	newClient.socket = clientSocket;
+	newClient.BIsLoggedIn = true;
+	newClient.sName = clientName;
+
+	ClientList.push_back(newClient);
+
+	cout << "클라이언트 : " << clientName << " " << endl;
+	if (ClientList.size() == 3) {
+
+		StartGame();
+	}
+}
+
+
 
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
@@ -17,6 +54,16 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	addrlen = sizeof(clientaddr);
 	getpeername(client_sock, (struct sockaddr*)&clientaddr, &addrlen);
 	inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
+
+
+	char cNameBuffer[256]; // 이름 받을거야
+	retval = recv(client_sock, cNameBuffer, sizeof(cNameBuffer), 0);
+	if (retval > 0) {  //정상적으로 받았다면
+		cNameBuffer[retval] = '\0';
+		string clientName(cNameBuffer);
+		HandleLogin(client_sock, clientName);
+	}
+	
 
 	while (1) {
 		// 데이터 받기
@@ -46,6 +93,8 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		addr, ntohs(clientaddr.sin_port));
 	return 0;
 }
+
+
 
 int main(int argc, char* argv[])
 {
@@ -108,3 +157,5 @@ int main(int argc, char* argv[])
 	WSACleanup();
 	return 0;
 }
+
+
