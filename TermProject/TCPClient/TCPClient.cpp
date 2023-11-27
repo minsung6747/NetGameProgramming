@@ -564,10 +564,10 @@ int main(int argc, char* argv[])
         return 1;
 
     // 소켓 생성
-    SOCKET sock1 = socket(AF_INET, SOCK_STREAM, 0);
-    SOCKET sock2 = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock1 == INVALID_SOCKET) err_quit("socket()");
-    if (sock2 == INVALID_SOCKET) err_quit("socket2()");
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+  
+    if (sock == INVALID_SOCKET) err_quit("socket()");
+    
 
 
 
@@ -578,53 +578,9 @@ int main(int argc, char* argv[])
     inet_pton(AF_INET, SERVERIP, &serveraddr.sin_addr);
     serveraddr.sin_port = htons(SERVERPORT);
 
-    retval = connect(sock1, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+    retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
     if (retval == SOCKET_ERROR) err_quit("connect()");
-    retval = connect(sock2, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
-    if (retval == SOCKET_ERROR) err_quit("connect2()");
-
-    // 데이터 통신에 사용할 변수
-
-    char playername[BUFSIZE + 1];
-
-    printf("이름을 입력해주세요 : ");
-    scanf("%s", &playername);
-
-    // playername 보내기
-    retval = send(sock1, playername, (int)strlen(playername), 0);
-    if (retval == SOCKET_ERROR) {
-        err_display("send()");
-        return 1;
-    }
-    printf("playername 전송 완료\n");
-    
-    int iForReady = 0;
-
-    // 입력값이 1일 때까지 반복
-    while (iForReady != 1)
-    {
-        printf("Press 1 to ready\n");
-        scanf("%d", &iForReady);
-    }
  
-    // Ready 상태를 서버에 전송
-    const char* readyMessage = "Ready";
-    retval = send(sock2, readyMessage, (int)strlen(readyMessage), 0);
-    if (retval == SOCKET_ERROR) {
-        err_display("send()");
-        return 1;
-    }
-    printf("Ready 상태를 서버에 전송했습니다.\n");
-
-    // 게임 시작 여부
-    bool bgamestart = false; 
-
-    while (!bgamestart)
-    {
-        // 게임 시작시까지 대기한다
-    }
-
-    // ----- 게임 시작 -----
 
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -662,19 +618,8 @@ int main(int argc, char* argv[])
 
 	char playersize[BUFSIZE + 1] = "100m";
 
-	// playersize 보내기
-	retval = send(sock2, playersize, (int)strlen(playersize), 0);
-	if (retval == SOCKET_ERROR) {
-		err_display("send()2");
-		return 1;
-	}
-	printf("playersize 전송 완료\n");
-
-	// printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
-
-	// 소켓 닫기
-	closesocket(sock1);
-	closesocket(sock2);
+	
+	closesocket(sock);
 
 	// 윈속 종료
 	WSACleanup();

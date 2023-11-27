@@ -106,6 +106,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>glew32.lib freeglut.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,7 +144,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GamePlayer.cpp" />
+    <ClCompile Include="GameShader.cpp" />
+    <ClCompile Include="Main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MainLoop.cpp" />
     <ClCompile Include="TCPServer.cpp" />
+    <ClCompile Include="UserInterface.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GamePlayer.h" />
+    <ClInclude Include="GameShader.h" />
+    <ClInclude Include="MainLoop.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="UserInterface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
