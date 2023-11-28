@@ -5,7 +5,8 @@
 /TermProject/TCPClient/.vs 
 /TermProject/TCPServer/.vs 
 /TermProject/TCPClient/x64 
-/TermProject/TCPServer/x64  
+/TermProject/TCPServer/x64
+/.vs
 *.exe 
 *.ilk 
 *.pdb 
