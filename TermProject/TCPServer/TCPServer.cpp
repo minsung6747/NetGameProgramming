@@ -2,28 +2,41 @@
 #include <vector>
 #include <string>
 #include <iostream>
-
+#include <mutex>
 #define SERVERPORT 9000
 #define BUFSIZE    512
-
-using namespace std;
 
 struct ClientInfo {
 	SOCKET socket;
 	bool BIsLoggedIn;
-	string sName;
-	
-};
+	std::string sName;
 
+};
+using namespace std;
+
+mutex clientListMutex;
 vector<ClientInfo> ClientList;
 
 
-void StartGame() {
 
+
+
+
+void StartGame() {
+	cout << "게임시작Test용" << endl;
+
+	//게임이 시작되었음을 클라이언트한테 알린다. 
+	//lock_guard<mutex> lock(clientListMutex);
+	for (const auto& client : ClientList) {
+		send(client.socket, (char*)"START", 5, 0);
+	}
 }
- 
+
 void HandleLogin(SOCKET clientSocket, const string& clientName) {
 	//클라이언트 한명이 로그인 하게되면,로그인상태로만든다.그리고 Vector Push 
+
+	lock_guard<mutex> lock(clientListMutex); // clientList 스레드동시접근 방지용 
+
 	ClientInfo newClient;
 	newClient.socket = clientSocket;
 	newClient.BIsLoggedIn = true;
@@ -32,11 +45,37 @@ void HandleLogin(SOCKET clientSocket, const string& clientName) {
 	ClientList.push_back(newClient);
 
 	cout << "클라이언트 : " << clientName << " " << endl;
+	
 	if (ClientList.size() == 3) {
 
+		// 레디되었냐 물어본다 지금 
+	/*	for (const auto& client : ClientList) {
+			send(client.socket, "READY", 5, 0);
+		}*/
+
+		// 클라이언트들 레디 상태 확인할거야.
+		//int iReadyCount = 0;
+
+		//while (iReadyCount < 3) {
+
+		//	//for (const auto& client : ClientList) {
+		//	int retval = recv(newClient.socket, (char*)&iKey, sizeof(iKey), 0);
+		//	//cout << iKey << endl; 
+		//	if (retval == SOCKET_ERROR) {
+		//		err_display("recv()");
+		//		break;
+		//	}
+		//	if (iKey == 1) { //retval가 에러가 나지 않았거나, Ready를 정확히 받았으면
+
+		//		iReadyCount++;
+		//		cout << iReadyCount << endl;
+		//	}
+			//	}
 		StartGame();
+		//lock_guard<mutex> unlock(clientListMutex);
 	}
 }
+
 
 
 
@@ -63,7 +102,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		string clientName(cNameBuffer);
 		HandleLogin(client_sock, clientName);
 	}
-	
+
 
 	while (1) {
 		// 데이터 받기

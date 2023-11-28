@@ -583,9 +583,9 @@ int main(int argc, char* argv[])
 
     // 소켓 생성
     SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-  
+
     if (sock == INVALID_SOCKET) err_quit("socket()");
-    
+
     // connect()
     struct sockaddr_in serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
@@ -598,46 +598,55 @@ int main(int argc, char* argv[])
     ////////////////////////////
     SendNameToServer(sock);        //서버에 이름을 보낸다.
 
-	glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowPosition(0, 0);
-    glutInitWindowSize(width, height);
-    glutCreateWindow("BLUE HOLE");
-    Setting();
-
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
-    {
-        cerr << "NOT INIT" << endl;
+   
+    // 서버로부터의 게임 시작 여부 확인
+    char cStartBuffer[BUFSIZE] = "";
+    recv(sock, (char*)cStartBuffer, sizeof(cStartBuffer), 0);
+    cStartBuffer[5] = '\0';
+    if (strcmp(cStartBuffer, "START") == 0) {
+        cout << "게임이 시작되었습니다!" << endl;
     }
-    else
-        cout << "INIT<<endl";
-    subMarine.scale_z = 0.f;
-    subMarine.trans_z_aoc = 0.f;
-    gs->InitShader();
-    gs->InitBuffer();
-    glEnable(GL_DEPTH_TEST);
-    glFrontFace(GL_CW);
-    glutDisplayFunc(drawScene);
-    glutKeyboardFunc(KeyBoard);
-    glutSpecialFunc(SpecialKeyBoard);
-    glutSpecialUpFunc(SpecialKeyBoardUp);
-    glutKeyboardUpFunc(KeyBoardUp);
-    glutMouseFunc(Mouse);
-    glutMotionFunc(Motion);
-    glutReshapeFunc([](int w, int h) {
-        glViewport(0, 0, w, h);
-        });
-    glutTimerFunc(5, Timer, 1);
-    glutMainLoop();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glutInit(&argc, argv);
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+        glutInitWindowPosition(0, 0);
+        glutInitWindowSize(width, height);
+        glutCreateWindow("BLUE HOLE");
+        Setting();
 
-	char playersize[BUFSIZE + 1] = "100m";
+        glewExperimental = GL_TRUE;
+        if (glewInit() != GLEW_OK)
+        {
+            cerr << "NOT INIT" << endl;
+        }
+        else
+            cout << "INIT<<endl";
+        subMarine.scale_z = 0.f;
+        subMarine.trans_z_aoc = 0.f;
+        gs->InitShader();
+        gs->InitBuffer();
+        glEnable(GL_DEPTH_TEST);
+        glFrontFace(GL_CW);
+        glutDisplayFunc(drawScene);
+        glutKeyboardFunc(KeyBoard);
+        glutSpecialFunc(SpecialKeyBoard);
+        glutSpecialUpFunc(SpecialKeyBoardUp);
+        glutKeyboardUpFunc(KeyBoardUp);
+        glutMouseFunc(Mouse);
+        glutMotionFunc(Motion);
+        glutReshapeFunc([](int w, int h) {
+            glViewport(0, 0, w, h);
+            });
+        glutTimerFunc(5, Timer, 1);
+        glutMainLoop();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
-	closesocket(sock);
+      
 
-	// 윈속 종료
-	WSACleanup();
-	return 0;
-}
+
+        closesocket(sock);
+
+        // 윈속 종료
+        WSACleanup();
+        return 0;
+    }
+
