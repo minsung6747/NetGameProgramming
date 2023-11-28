@@ -48,29 +48,7 @@ void HandleLogin(SOCKET clientSocket, const string& clientName) {
 	
 	if (ClientList.size() == 3) {
 
-		// 레디되었냐 물어본다 지금 
-	/*	for (const auto& client : ClientList) {
-			send(client.socket, "READY", 5, 0);
-		}*/
-
-		// 클라이언트들 레디 상태 확인할거야.
-		//int iReadyCount = 0;
-
-		//while (iReadyCount < 3) {
-
-		//	//for (const auto& client : ClientList) {
-		//	int retval = recv(newClient.socket, (char*)&iKey, sizeof(iKey), 0);
-		//	//cout << iKey << endl; 
-		//	if (retval == SOCKET_ERROR) {
-		//		err_display("recv()");
-		//		break;
-		//	}
-		//	if (iKey == 1) { //retval가 에러가 나지 않았거나, Ready를 정확히 받았으면
-
-		//		iReadyCount++;
-		//		cout << iReadyCount << endl;
-		//	}
-			//	}
+	
 		StartGame();
 		//lock_guard<mutex> unlock(clientListMutex);
 	}

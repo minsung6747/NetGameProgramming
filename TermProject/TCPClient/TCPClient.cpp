@@ -5,6 +5,9 @@
 #include "GameObject.h"
 #include <GL/glew.h>
 #include <iostream>
+#include "PacketStruct.h"
+#include "PacketNumber.h"
+
 char* SERVERIP = (char*)"127.0.0.1";
 #define SERVERPORT 9000
 #define BUFSIZE    512
