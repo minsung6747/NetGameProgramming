@@ -152,17 +152,16 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="MainLoop.cpp" />
-    <ClCompile Include="PacketNumber.h" />
     <ClCompile Include="TCPClient.cpp" />
     <ClCompile Include="UserInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Protocol.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GamePlayer.h" />
     <ClInclude Include="GameShader.h" />
     <ClInclude Include="MainLoop.h" />
-    <ClInclude Include="PacketStruct.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="UserInterface.h" />
   </ItemGroup>

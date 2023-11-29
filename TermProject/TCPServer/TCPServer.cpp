@@ -3,8 +3,7 @@
 #include <string>
 #include <iostream>
 #include <mutex>
-#include "PacketStruct.h"
-#include "PacketNumber.h"
+#include "..\Protocol.h"
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
@@ -12,15 +11,20 @@ struct ClientInfo {
 	SOCKET socket;
 	bool BIsLoggedIn;
 	std::string sName;
-
+	int id;
 };
+
+struct SOCK_INFO {
+	SOCKET client_sock{};
+	int id{};
+
+	SOCK_INFO* GetSockInfo() { return this; }
+};
+
 using namespace std;
 
 mutex clientListMutex;
 vector<ClientInfo> ClientList;
-
-
-
 
 
 
@@ -31,28 +35,30 @@ void StartGame() {
 	//lock_guard<mutex> lock(clientListMutex);
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
+		send(client.socket, (char*) &client.id, sizeof(int), 0);
 	}
 }
 
-void HandleLogin(SOCKET clientSocket, const string& clientName) {
+void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 	//클라이언트 한명이 로그인 하게되면,로그인상태로만든다.그리고 Vector Push 
 
+	
 	lock_guard<mutex> lock(clientListMutex); // clientList 스레드동시접근 방지용 
-
 	ClientInfo newClient;
-	newClient.socket = clientSocket;
+	newClient.socket = clientSocket->client_sock;
 	newClient.BIsLoggedIn = true;
 	newClient.sName = clientName;
+	newClient.id = clientSocket->id;
 
 	ClientList.push_back(newClient);
 
-	cout << "클라이언트 : " << clientName << " " << endl;
+	cout << "클라이언트 : " << "["<<newClient.id <<"]" << clientName << " " << endl;
 	
 	if (ClientList.size() == 3) {
 
 	
 		StartGame();
-		//lock_guard<mutex> unlock(clientListMutex);
+		//lock_guard<mutex> unlock(&clientListMutex);
 	}
 }
 
@@ -62,8 +68,11 @@ void HandleLogin(SOCKET clientSocket, const string& clientName) {
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
+
 	int retval;
-	SOCKET client_sock = (SOCKET)arg;
+	SOCK_INFO* sock_info = reinterpret_cast<SOCK_INFO*> (arg);
+
+	SOCKET client_sock = sock_info->client_sock;
 	struct sockaddr_in clientaddr;
 	char addr[INET_ADDRSTRLEN];
 	int addrlen;
@@ -80,7 +89,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	if (retval > 0) {  //정상적으로 받았다면
 		cNameBuffer[retval] = '\0';
 		string clientName(cNameBuffer);
-		HandleLogin(client_sock, clientName);
+		HandleLogin(sock_info, clientName);
 	}
 
 
@@ -91,19 +100,28 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 			err_display("recv()");
 			break;
 		}
-		else if (retval == 0)
-			break;
+		switch (buf[0]) {
+		case SC_KEY_INPUT:
+		{
+
+			INPUT_PACKET* packet = reinterpret_cast<INPUT_PACKET*>(buf);
+
+			cout << "["<<sock_info->id<<"]" << ", " << packet->input << endl;
+		}
+		}
+		/*else if (retval == 0)
+			break;*/
 
 		// 받은 데이터 출력
-		buf[retval] = '\0';
-		printf("[TCP/%s:%d] %s\n", addr, ntohs(clientaddr.sin_port), buf);
+	/*	buf[retval] = '\0';
+		printf("[TCP/%s:%d] %s\n", addr, ntohs(clientaddr.sin_port), buf);*/
 
 		// 데이터 보내기
-		retval = send(client_sock, buf, retval, 0);
+	/*	retval = send(client_sock, buf, retval, 0);
 		if (retval == SOCKET_ERROR) {
 			err_display("send()");
 			break;
-		}
+		}*/
 	}
 
 	// 소켓 닫기
@@ -142,10 +160,12 @@ int main(int argc, char* argv[])
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
 	// 데이터 통신에 사용할 변수
+	SOCK_INFO* Clients = new SOCK_INFO[3];
 	SOCKET client_sock;
 	struct sockaddr_in clientaddr;
-	int addrlen;
 	HANDLE hThread;
+	int addrlen;
+	int i{-1};
 
 	while (1) {
 		// accept()
@@ -155,7 +175,8 @@ int main(int argc, char* argv[])
 			err_display("accept()");
 			break;
 		}
-
+		Clients[++i].client_sock = client_sock;
+		Clients[i].id = i;
 		// 접속한 클라이언트 정보 출력
 		char addr[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
@@ -164,7 +185,7 @@ int main(int argc, char* argv[])
 
 		// 스레드 생성
 		hThread = CreateThread(NULL, 0, ProcessClient,
-			(LPVOID)client_sock, 0, NULL);
+			reinterpret_cast<LPVOID*>(Clients[i].GetSockInfo()), 0, NULL);
 		if (hThread == NULL) { closesocket(client_sock); }
 		else { CloseHandle(hThread); }
 	}
