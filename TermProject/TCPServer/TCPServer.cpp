@@ -21,9 +21,6 @@ vector<ClientInfo> ClientList;
 
 
 
-
-
-
 void StartGame() {
 	cout << "게임시작Test용" << endl;
 
@@ -32,6 +29,8 @@ void StartGame() {
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
 	}
+	
+
 }
 
 void HandleLogin(SOCKET clientSocket, const string& clientName) {
@@ -104,6 +103,19 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 			err_display("send()");
 			break;
 		}
+		MOVE_PACKET movePacket;
+		retval = recv(client_sock, reinterpret_cast<char*>(&movePacket), sizeof(MOVE_PACKET), 0);
+		if (retval == SOCKET_ERROR) {
+			err_display("recv()");
+			break;
+		}
+		else if (retval == 0)
+			break;
+
+		// MOVE_PACKET 처리
+		printf("[TCP/%s:%d] Received MOVE_PACKET: Type=%d, X=%f, Y=%f, Z=%f\n",
+			addr, ntohs(clientaddr.sin_port), movePacket.iType, movePacket.fX, movePacket.fY, movePacket.fZ);
+
 	}
 
 	// 소켓 닫기

@@ -18,7 +18,7 @@ struct ClientInfo {
     bool bisLoggedIn;
     
 };
-
+SOCKET sock;
 random_device rd;
 mt19937 gen{ rd() };
 
@@ -37,7 +37,7 @@ GLvoid SpecialKeyBoardUp(int, int, int);
 GLvoid Timer(int);
 GLvoid MouseChange(int, int);
 GLvoid Mouse(int, int);
-
+void SendPlayerPosition();
 typedef struct object {
     float trans_x{}, trans_y{}, trans_z{};               // 기본 좌표값
     float trans_x_aoc{}, trans_y_aoc{}, trans_z_aoc{};      // 좌표 변화량 aoc - amount of change
@@ -438,17 +438,23 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
         break;
     case 'a':
         left_key = true;
+        SendPlayerPosition();
         break;
     case 'd':
         right_key = true;
+        SendPlayerPosition();
         break;
     case 'w':
         up_key = true;
+        SendPlayerPosition();
+      
         break;
     case 's':
         down_key = true;
+        SendPlayerPosition();
         break;
     }
+   
     glutPostRedisplay();
 }
 GLvoid SpecialKeyBoard(int key, int x, int y)
@@ -561,6 +567,20 @@ GLvoid Timer(int value)
     glutTimerFunc(5, Timer, 1);
 }
 
+void SendPlayerPosition() {
+    // MOVE_PACKET 구조체 생성
+    MOVE_PACKET movePacket;
+    movePacket.iType = 1;  // Set the packet type as 1 (you can use different values for different types)
+    movePacket.fX = subMarine.trans_x;
+    movePacket.fY = subMarine.trans_y;
+    movePacket.fZ = subMarine.trans_z;
+
+    // 데이터를 서버에 전송
+    size_t bytes_sent = send(sock, (char*)&movePacket, sizeof(MOVE_PACKET), 0);
+    if (bytes_sent == -1) {
+        std::cerr << "Error sending player position to server" << std::endl;
+    }
+}
 
 void SendNameToServer(SOCKET clientSocket) {
     char clientName[256];
@@ -585,7 +605,7 @@ int main(int argc, char* argv[])
         return 1;
 
     // 소켓 생성
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+     sock = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sock == INVALID_SOCKET) err_quit("socket()");
 
