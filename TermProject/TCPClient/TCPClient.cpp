@@ -18,7 +18,7 @@ struct ClientInfo {
 
 };
 struct SOCK_INFO {
-	SOCKET client_sock{};
+	SOCKET server_sock{};
 	int id{};
 	SOCK_INFO* GetSockInfo() { return this; }
 };
@@ -27,6 +27,7 @@ random_device rd;
 mt19937 gen{ rd() };
 
 int g_id;
+SOCK_INFO* sock_info;
 SOCKET sock;
 
 Camera CO;
@@ -66,7 +67,7 @@ typedef struct function {
 	bool is_x_plus_move{ false };
 }F;
 
-O subMarine;
+O subMarine[3];
 
 struct Mouse_Handling {
 	bool left_button;
@@ -84,7 +85,6 @@ struct Mouse_Handling {
 };
 Mouse_Handling MH;
 //상민
-GLvoid Setting();
 GLint Collision(float first_x1, float first_x2, float last_x1, float last_x2)
 {
 	if (first_x1 <= last_x1 && last_x1 <= first_x2)
@@ -98,7 +98,7 @@ GLint Collision(float first_x1, float first_x2, float last_x1, float last_x2)
 	return 0;
 }
 
-GLfloat rot;
+//GLfloat rot;
 GLfloat rot_t;
 GLfloat camera_rot;
 bool Grab_Arm_Long = false;
@@ -118,12 +118,12 @@ bool C_R_L = false;
 GLfloat C_R;
 GLfloat arm_rot;
 GLfloat limit;
-GLvoid Draw_SubMarine() {
+GLvoid Draw_SubMarine(int id) {
 
 	glm::mat4 Body = glm::mat4(1.0f);
-	Body = glm::translate(Body, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Body = glm::translate(Body, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Body = glm::translate(Body, glm::vec3(0.f, 0.f, 0.0f));
-	Body = glm::rotate(Body, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Body = glm::rotate(Body, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	//Body = glm::rotate(Body, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Body = glm::scale(Body, glm::vec3(0.2f, 0.2f, 0.3f));
 	unsigned int HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
@@ -137,9 +137,9 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Head = glm::mat4(1.0f);
-	Head = glm::translate(Head, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Head = glm::translate(Head, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Head = glm::translate(Head, glm::vec3(0.f, 0.f, 0.0f));
-	Head = glm::rotate(Head, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Head = glm::rotate(Head, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	Head = glm::scale(Head, glm::vec3(0.2f, 0.2f, 0.2f));
 	HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
 	glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Head));
@@ -152,8 +152,8 @@ GLvoid Draw_SubMarine() {
 	gluSphere(gs->qobj, 1.0, 20, 20);
 
 	glm::mat4 Tail = glm::mat4(1.0f);
-	Tail = glm::translate(Tail, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
-	Tail = glm::rotate(Tail, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Tail = glm::translate(Tail, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
+	Tail = glm::rotate(Tail, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	//Tail = glm::rotate(Tail, glm::radians(90.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Tail = glm::translate(Tail, glm::vec3(0.f, 0.f, 0.6f));
 	Tail = glm::scale(Tail, glm::vec3(0.2f, 0.2f, 0.2f));
@@ -168,8 +168,8 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 0.0, 2.0, 20, 8);
 
 	glm::mat4 Wing = glm::mat4(1.0f);
-	Wing = glm::translate(Wing, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
-	Wing = glm::rotate(Wing, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Wing = glm::translate(Wing, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
+	Wing = glm::rotate(Wing, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	Wing = glm::rotate(Wing, glm::radians(rot_t), glm::vec3(0.0f, 0.0f, 1.0f));
 	Wing = glm::translate(Wing, glm::vec3(0.f, 0.f, 0.9f));
 	Wing = glm::scale(Wing, glm::vec3(0.3f, 0.005f, 0.05f));
@@ -184,8 +184,8 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	Wing = glm::mat4(1.0f);
-	Wing = glm::translate(Wing, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
-	Wing = glm::rotate(Wing, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Wing = glm::translate(Wing, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
+	Wing = glm::rotate(Wing, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	Wing = glm::rotate(Wing, glm::radians(rot_t), glm::vec3(0.0f, 0.0f, 1.0f));
 	Wing = glm::rotate(Wing, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
 	Wing = glm::translate(Wing, glm::vec3(0.f, 0.f, 0.9f));
@@ -201,8 +201,8 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Grab_Arm_Body = glm::mat4(1.0f);
-	Grab_Arm_Body = glm::translate(Grab_Arm_Body, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
-	Grab_Arm_Body = glm::rotate(Grab_Arm_Body, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm_Body = glm::translate(Grab_Arm_Body, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
+	Grab_Arm_Body = glm::rotate(Grab_Arm_Body, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm_Body = glm::translate(Grab_Arm_Body, glm::vec3(0.f, -0.2f, 0.f));
 	Grab_Arm_Body = glm::scale(Grab_Arm_Body, glm::vec3(0.05f, 0.05f, 0.05f));
 	HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
@@ -216,14 +216,14 @@ GLvoid Draw_SubMarine() {
 	gluSphere(gs->qobj, 1.0, 20, 20);
 
 	glm::mat4 Grab_Arm = glm::mat4(1.0f);
-	Grab_Arm = glm::translate(Grab_Arm, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Grab_Arm = glm::translate(Grab_Arm, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, -0.2f, 0.05f));
 	Grab_Arm = glm::rotate(Grab_Arm, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
 	Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, 0.2f, -0.05f));
-	Grab_Arm = glm::rotate(Grab_Arm, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm = glm::rotate(Grab_Arm, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm = glm::rotate(Grab_Arm, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm = glm::translate(Grab_Arm, glm::vec3(0.f, -0.2f, 0.05f));
-	Grab_Arm = glm::scale(Grab_Arm, glm::vec3(0.03f, 0.03f, 0.1f + subMarine.scale_z));
+	Grab_Arm = glm::scale(Grab_Arm, glm::vec3(0.03f, 0.03f, 0.1f + subMarine[id].scale_z));
 	HtransformLocation = glGetUniformLocation(gs->s_program, "transform");
 	glUniformMatrix4fv(HtransformLocation, 1, GL_FALSE, glm::value_ptr(Grab_Arm));
 	objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
@@ -235,10 +235,10 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Grab_Arm_Finger1 = glm::mat4(1.0f);
-	Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
-	Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
-	Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(0.f, -0.2f, -0.25f + subMarine.trans_z_aoc));
+	Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm_Finger1 = glm::translate(Grab_Arm_Finger1, glm::vec3(0.f, -0.2f, -0.25f + subMarine[id].trans_z_aoc));
 	Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm_Finger1 = glm::rotate(Grab_Arm_Finger1, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
 	Grab_Arm_Finger1 = glm::scale(Grab_Arm_Finger1, glm::vec3(0.03f, 0.005f, 0.09f));
@@ -253,10 +253,10 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Grab_Arm_Finger2 = glm::mat4(1.0f);
-	Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
-	Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
-	Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(0.f, -0.2f, -0.25f + subMarine.trans_z_aoc));
+	Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm_Finger2 = glm::translate(Grab_Arm_Finger2, glm::vec3(0.f, -0.2f, -0.25f + subMarine[id].trans_z_aoc));
 	Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm_Finger2 = glm::rotate(Grab_Arm_Finger2, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
 	Grab_Arm_Finger2 = glm::scale(Grab_Arm_Finger2, glm::vec3(0.03f, 0.005f, 0.09f));
@@ -271,10 +271,10 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Grab_Arm_Finger3 = glm::mat4(1.0f);
-	Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
-	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
-	Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(0.f, -0.2f, -0.25f + subMarine.trans_z_aoc));
+	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm_Finger3 = glm::translate(Grab_Arm_Finger3, glm::vec3(0.f, -0.2f, -0.25f + subMarine[id].trans_z_aoc));
 	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(90.f), glm::vec3(0.0f, 0.0f, 1.0f));
 	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm_Finger3 = glm::rotate(Grab_Arm_Finger3, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -290,10 +290,10 @@ GLvoid Draw_SubMarine() {
 	gluCylinder(gs->qobj, 1.0, 1.0, 2.0, 20, 8);
 
 	glm::mat4 Grab_Arm_Finger4 = glm::mat4(1.0f);
-	Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(subMarine.trans_x, subMarine.trans_y, subMarine.trans_z));
+	Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(subMarine[id].trans_x, subMarine[id].trans_y, subMarine[id].trans_z));
 	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(arm_rot), glm::vec3(1.0f, 0.0f, 0.0f));
-	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(rot), glm::vec3(0.0f, 1.0f, 0.0f));
-	Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(0.f, -0.2f, -0.25f + subMarine.trans_z_aoc));
+	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(subMarine[id].rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
+	Grab_Arm_Finger4 = glm::translate(Grab_Arm_Finger4, glm::vec3(0.f, -0.2f, -0.25f + subMarine[id].trans_z_aoc));
 	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(-90.f), glm::vec3(0.0f, 0.0f, 1.0f));
 	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	Grab_Arm_Finger4 = glm::rotate(Grab_Arm_Finger4, glm::radians(-45.f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -311,18 +311,18 @@ GLvoid Draw_SubMarine() {
 }
 GLvoid subMarine_collison() {
 	for (int x = 0; x < 50; x++) {
-		if (subMarine.trans_x <= wp_Bomb[x].transX + 0.2f && subMarine.trans_x >= wp_Bomb[x].transX - 0.2f &&
+		/*if (subMarine.trans_x <= wp_Bomb[x].transX + 0.2f && subMarine.trans_x >= wp_Bomb[x].transX - 0.2f &&
 			subMarine.trans_y <= wp_Bomb[x].transY + 0.2f && subMarine.trans_y >= wp_Bomb[x].transY - 0.2f &&
 			subMarine.trans_z <= wp_Bomb[x].transZ + 0.2f && subMarine.trans_z >= wp_Bomb[x].transZ - 0.2f
 			) {
 			subMarine.trans_x = 10.f;
 			subMarine.trans_y = 1.f;
 			subMarine.trans_z = 10.f;
-		}
+		}*/
 	}
 }
 GLvoid subMarine_Catch() {
-	float test = subMarine.trans_z + subMarine.trans_z_aoc;
+	/*float test = subMarine.trans_z + subMarine.trans_z_aoc;
 	for (int x = 0; x < 3; x++) {
 		if (wp_Gemstone[x].transX - 0.6f <= subMarine.trans_x && subMarine.trans_x <= wp_Gemstone[x].transX + 0.6f &&
 			wp_Gemstone[x].transY - 1.f <= subMarine.trans_y && subMarine.trans_y <= wp_Gemstone[x].transY + 1.f &&
@@ -346,7 +346,7 @@ GLvoid subMarine_Catch() {
 			wp_Gemstone[x].transY = 0.f;
 			wp_Gemstone[x].transZ = 10.f;
 		}
-	}
+	}*/
 
 }
 void drawScene()
@@ -358,15 +358,15 @@ void drawScene()
 
 		if (i == 1) {
 			glViewport(0, 0, width, height);
-			glm::vec3 cameraPos = glm::vec3(subMarine.trans_x, subMarine.trans_y + 1.5f, subMarine.trans_z); //--- 카메라 위치
-			glm::vec3 cameraDirection = glm::vec3(subMarine.trans_x, 0.3f, subMarine.trans_z - 5); //--- 카메라 바라보는 방향
+			glm::vec3 cameraPos = glm::vec3(subMarine[g_id].trans_x, subMarine[g_id].trans_y + 1.5f, subMarine[g_id].trans_z); //--- 카메라 위치
+			glm::vec3 cameraDirection = glm::vec3(subMarine[g_id].trans_x, 0.3f, subMarine[g_id].trans_z - 5); //--- 카메라 바라보는 방향
 			glm::vec3 cameraUp = glm::vec3(0.0f, 4.0f, 0.0f); //--- 카메라 위쪽 방향
 			glm::mat4 view = glm::mat4(1.0f);
 			view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
-			view = glm::translate(view, glm::vec3(subMarine.trans_x, subMarine.trans_y + 1.0f, subMarine.trans_z));
+			view = glm::translate(view, glm::vec3(subMarine[g_id].trans_x, subMarine[g_id].trans_y + 1.0f, subMarine[g_id].trans_z));
 			view = glm::rotate(view, glm::radians(CO.camera_drgree_y), glm::vec3(1.0f, 0.0f, 0.0f));
 			view = glm::rotate(view, glm::radians(CO.camera_drgree_x), glm::vec3(0.0f, 1.0f, 0.0f));
-			view = glm::translate(view, glm::vec3(-subMarine.trans_x, -subMarine.trans_y - 1.0f, -subMarine.trans_z));
+			view = glm::translate(view, glm::vec3(-subMarine[g_id].trans_x, -subMarine[g_id].trans_y - 1.0f, -subMarine[g_id].trans_z));
 
 			unsigned int viewLocation = glGetUniformLocation(gs->s_program, "view"); //--- 뷰잉 변환 설정
 			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
@@ -380,8 +380,8 @@ void drawScene()
 		}
 		else {
 			glViewport(1050, 550, 150, 150);
-			glm::vec3 cameraPos = glm::vec3(subMarine.trans_x, 5.0f, subMarine.trans_z);         //위치
-			glm::vec3 cameraDirection = glm::vec3(subMarine.trans_x, 0.0f, subMarine.trans_z);   //바라보는 방향
+			glm::vec3 cameraPos = glm::vec3(subMarine[g_id].trans_x, 5.0f, subMarine[g_id].trans_z);         //위치
+			glm::vec3 cameraDirection = glm::vec3(subMarine[g_id].trans_x, 0.0f, subMarine[g_id].trans_z);   //바라보는 방향
 			glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, -10.0f);         //카메라 상향
 			glm::mat4 view = glm::mat4(1.0f);
 			view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
@@ -402,7 +402,9 @@ void drawScene()
 		wp_Bomb->Bomb_Mat(gs);
 		bg->Warehouse_Mat(gs);
 		//은형
-		Draw_SubMarine();
+		for (int i = 0;i < 3;++i) {
+			Draw_SubMarine(i);
+		}
 		subMarine_collison();
 		subMarine_Catch();
 	}
@@ -419,15 +421,16 @@ GLvoid KeyBoardUp(unsigned char key, int x, int y) {
 		right_key = false;
 		break;
 	case 'w':
-		up_key = false;
+		//up_key = false;
 		break;
 	case 's':
-		down_key = false;
+		//down_key = false;
 		break;
 	}
 	glutPostRedisplay();
 }
 GLvoid KeyBoard(unsigned char key, int x, int y) {
+		INPUT_PACKET* packet = new INPUT_PACKET;
 	switch (key)
 	{
 	case 'r':
@@ -453,30 +456,35 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
 	}
 	case 'a':
 	{
-		left_key = true;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 'a';
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
 	case 'd':
 	{
-		right_key = true;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 'd';
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
 	case 'w':
 	{
-		up_key = true;
-		INPUT_PACKET* packet = new INPUT_PACKET;
+		//up_key = true;
 		packet->type = SC_KEY_INPUT;
 		packet->input = 'w';
 		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
-		delete packet;
 		break;
 	}
 	case 's':
 	{
-		down_key = true;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 's';
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
 	}
+		delete packet;
 	glutPostRedisplay();
 }
 GLvoid SpecialKeyBoard(int key, int x, int y)
@@ -544,11 +552,13 @@ void MouseChange(int x, int y) {
 }
 
 
-GLvoid Setting()
+GLvoid Setting(int id)
 {
-	subMarine.trans_x = 10.f;
-	subMarine.trans_y = 1.f;
-	subMarine.trans_z = 10.f;
+	subMarine[id].trans_x = 10.f;
+	subMarine[id].trans_y = 1.f;
+	subMarine[id].trans_z = 10.f;
+	subMarine[id].scale_z = 0.f;
+	subMarine[id].trans_z_aoc = 0.f;
 }
 GLvoid Timer(int value)
 {
@@ -560,30 +570,30 @@ GLvoid Timer(int value)
 	if (R_key == true && arm_rot >= -30.f) {
 		arm_rot -= 1.f;
 	}
-	if (Grab_Arm_Long == true && subMarine.scale_z <= 0.2f) {
-		subMarine.scale_z += 0.01f;
+	if (Grab_Arm_Long == true && subMarine[g_id].scale_z <= 0.2f) {
+		subMarine[g_id].scale_z += 0.01f;
 	}
-	if (Grab_Arm_Long == false && subMarine.scale_z != 0.f) {
-		subMarine.scale_z -= 0.01f;
+	if (Grab_Arm_Long == false && subMarine[g_id].scale_z != 0.f) {
+		subMarine[g_id].scale_z -= 0.01f;
 	}
-	if (Grab_Arm_Long == true && subMarine.trans_z_aoc >= -0.35f) subMarine.trans_z_aoc -= 0.02f;
-	if (Grab_Arm_Long == false && subMarine.trans_z_aoc <= 0.f)subMarine.trans_z_aoc += 0.02f;
+	if (Grab_Arm_Long == true && subMarine[g_id].trans_z_aoc >= -0.35f) subMarine[g_id].trans_z_aoc -= 0.02f;
+	if (Grab_Arm_Long == false && subMarine[g_id].trans_z_aoc <= 0.f)subMarine[g_id].trans_z_aoc += 0.02f;
 
 
-	if (right_key) {
-		rot -= 1.f;
-	}
-	if (left_key) {
-		rot += 1.f;
-	}
-	if (up_key) {
-		subMarine.trans_x -= 0.03f * sin(rot * atan(1) * 4 / 180);
-		subMarine.trans_z -= 0.03f * cos(rot * atan(1) * 4 / 180);
-	}
-	if (down_key) {
-		subMarine.trans_x += 0.03f * sin(rot * atan(1) * 4 / 180);
-		subMarine.trans_z += 0.03f * cos(rot * atan(1) * 4 / 180);
-	}
+	//if (right_key) {
+	//	rot -= 1.f;
+	//}
+	//if (left_key) {
+	//	rot += 1.f;
+	//}
+	//if (up_key) {
+	//	subMarine[g_id].trans_x -= 0.03f * sin(rot * atan(1) * 4 / 180);
+	//	subMarine[g_id].trans_z -= 0.03f * cos(rot * atan(1) * 4 / 180);
+	//}
+	//if (down_key) {
+	//	subMarine[g_id].trans_x += 0.03f * sin(rot * atan(1) * 4 / 180);
+	//	subMarine[g_id].trans_z += 0.03f * cos(rot * atan(1) * 4 / 180);
+	//}
 	rot_t += 10.f;
 	glutPostRedisplay();
 	glutTimerFunc(5, Timer, 1);
@@ -600,6 +610,59 @@ void SendNameToServer(SOCKET clientSocket) {
 	send(clientSocket, clientName, strlen(clientName), 0);
 }
 
+DWORD WINAPI ProcessClient(LPVOID arg)
+{
+
+	int retval;
+	SOCK_INFO* sock_info = reinterpret_cast<SOCK_INFO*> (arg);
+
+	SOCKET server_sock = sock_info->server_sock;
+	struct sockaddr_in clientaddr;
+	char addr[INET_ADDRSTRLEN];
+	int addrlen;
+	char buf[BUFSIZE + 1];
+
+	while (1) {
+		// 데이터 받기
+		retval = recv(server_sock, buf, BUFSIZE, 0);
+		if (buf[0] == SC_SEND_PLAYER) {
+			SEND_PLAYER* packet_sp = reinterpret_cast<SEND_PLAYER*>(buf);
+			int id = packet_sp->id;
+			for (int i = 0;i < 2;++i) {
+				retval = recv(server_sock, buf, BUFSIZE, 0);
+				if (retval == SOCKET_ERROR) {
+					err_display("recv()");
+					break;
+				}
+				switch (buf[0]) {
+				case SC_PLAYER_MOVE:
+				{
+					MOVE_PACKET* packet_tr = reinterpret_cast<MOVE_PACKET*>(buf);
+					subMarine[id].trans_x = packet_tr->fx;
+					subMarine[id].trans_y = packet_tr->fy;
+					subMarine[id].trans_z = packet_tr->fz;
+					std::cout << id << " " << packet_tr->fz << endl;
+					break;
+				}
+				case SC_PLAYER_ROTATE:
+				{
+					ROTATE_PACKET* packet_ro = reinterpret_cast<ROTATE_PACKET*>(buf);
+					subMarine[id].rotate_y = packet_ro->fy;
+					//std::cout << packet_ro->fy << endl;
+					break;
+				}
+				}
+			}
+		}
+
+	}
+	// 소켓 닫기
+	delete sock_info;
+	closesocket(server_sock);
+
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	int retval;
@@ -613,9 +676,13 @@ int main(int argc, char* argv[])
 		return 1;
 
 	// 소켓 생성
+	sock_info = new SOCK_INFO;
+
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (sock == INVALID_SOCKET) err_quit("socket()");
+
+
 
 	// connect()
 	struct sockaddr_in serveraddr;
@@ -626,26 +693,36 @@ int main(int argc, char* argv[])
 
 	retval = connect(sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if (retval == SOCKET_ERROR) err_quit("connect()");
+	sock_info->server_sock = sock;
+
+
 	////////////////////////////
 	SendNameToServer(sock);        //서버에 이름을 보낸다.
 
 
 	// 서버로부터의 게임 시작 여부 확인
 	char cStartBuffer[BUFSIZE] = "";
-	int i{};
 	recv(sock, (char*)cStartBuffer, 5, 0);
 	cStartBuffer[5] = '\0';
 	if (strcmp(cStartBuffer, "START") == 0) {
-	recv(sock, reinterpret_cast<char*>(&g_id), sizeof(int), 0);
+		recv(sock, reinterpret_cast<char*>(&g_id), sizeof(int), 0);
 		std::cout << "[" << g_id << "]" << "클라이언트의 게임이 시작되었습니다!" << endl;
-
+		HANDLE hThread;
+		hThread = CreateThread(NULL, 0, ProcessClient,
+			reinterpret_cast<LPVOID*>(sock_info->GetSockInfo()), 0, NULL);
+		if (hThread == NULL) { closesocket(sock); }
+		else { CloseHandle(hThread); }
 	}
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("BLUE HOLE");
-	Setting();
+	for(int i=0;i<3;++i)
+	Setting(i);
+
+	
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -653,9 +730,7 @@ int main(int argc, char* argv[])
 		cerr << "NOT INIT" << endl;
 	}
 	else
-		std::cout << "INIT<<endl";
-	subMarine.scale_z = 0.f;
-	subMarine.trans_z_aoc = 0.f;
+	std::cout << "INIT<<endl";
 	gs->InitShader();
 	gs->InitBuffer();
 	glEnable(GL_DEPTH_TEST);
@@ -675,7 +750,7 @@ int main(int argc, char* argv[])
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-
+	
 
 	closesocket(sock);
 

@@ -18,55 +18,7 @@ Background::~Background()
 {
 }
 
-GLvoid Background::Background_Mat(GameShader* gs)
-{
-	glm::mat4 floor = glm::mat4(1.0f);
-	floor = glm::scale(floor, glm::vec3(100.f, 1.0f, 100.f));
-	floor = glm::translate(floor, glm::vec3(0.1f, 0.0f, 0.1f));
-	floor = glm::rotate(floor, glm::radians(90.f), glm::vec3(1.0f, 0.0f, 0.0f));
-	unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-	glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(floor));
-	gs->qobj = gluNewQuadric();
-	gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-	int objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-	unsigned isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-	glUniform1f(isCheck, false);
-	glUniform4f(objColorLocation, 0.266f, 0.226f, 0.14f, 1.0);
-	gluDisk(gs->qobj, 0, 0.1f, 128, 1);
 
-	glm::mat4 sea_mat = glm::mat4(1.0f);
-	sea_mat = glm::scale(sea_mat, glm::vec3(100.f, 100.f, 100.f));
-	sea_mat = glm::translate(sea_mat, glm::vec3(0.1f, 0.1f, 0.1f));
-	sea_mat = glm::rotate(sea_mat, glm::radians(90.f), glm::vec3(1.0f, 0.0f, 0.0f));
-	StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-	glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(sea_mat));
-	gs->qobj = gluNewQuadric();
-	gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-	objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-	isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-	glUniform1f(isCheck, false);
-	glUniform4f(objColorLocation, 0.2f, 0.2f, 0.5f, 1.0);
-	gluCylinder(gs->qobj, 0.1f, 0.1f, 0.2f, 128, 1);
-}
-
-GLvoid Background::Warehouse_Mat(GameShader* gs)
-{
-	glm::mat4 Bottom_Matrix = glm::mat4(1.0f);
-	Bottom_Matrix = glm::translate(Bottom_Matrix, glm::vec3(10.0f, 0.0f, 10.0f));
-	Bottom_Matrix = glm::scale(Bottom_Matrix, glm::vec3(10.f, 10.0f, 10.f));
-	Bottom_Matrix = glm::translate(Bottom_Matrix, glm::vec3(0.0f, 0.11f, 0.0f));
-	unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-	glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(Bottom_Matrix));
-	gs->qobj = gluNewQuadric();
-	gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-	int objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-	unsigned isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-	glUniform1f(isCheck, false);
-	glUniform4f(objColorLocation, 0.2f, 0.0f, 0.2f, 1.0);
-	glBindVertexArray(gs->VAO[0]);
-	glDrawArrays(GL_TRIANGLES, 12, 24);
-
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,162 +48,6 @@ GLvoid Gemstone::SetPosition()
 			if (!flag)break;
 		}
 	}
-}
-GLvoid Gemstone::Ore_Mat(GameShader* gs)
-{
-    SetPosition();
-    glm::mat4 rock_mat = glm::mat4(1.0f);
-    /*if(!ore[1].put&& !ore[1].get)*/rock_mat = glm::translate(rock_mat, glm::vec3(ore[1].transX, ore[1].transY, ore[1].transZ));
-    rock_mat = glm::scale(rock_mat, glm::vec3(1.f, 5.f, 1.f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock_mat = glm::translate(rock_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    unsigned objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    int isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock_mat = glm::mat4(1.0f);
-    rock_mat = glm::translate(rock_mat, glm::vec3(ore[1].transX, ore[1].transY, ore[1].transZ));
-    rock_mat = glm::rotate(rock_mat, glm::radians(25.f), glm::vec3(1.0f, 0.0f, 0.0f));
-    rock_mat = glm::scale(rock_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock_mat = glm::translate(rock_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock_mat = glm::mat4(1.0f);
-    rock_mat = glm::translate(rock_mat, glm::vec3(ore[1].transX, ore[1].transY, ore[1].transZ));
-    rock_mat = glm::rotate(rock_mat, glm::radians(-30.f), glm::vec3(1.0f, 0.0f, 0.0f));
-    rock_mat = glm::scale(rock_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock_mat = glm::translate(rock_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    glm::mat4 rock1_mat = glm::mat4(1.0f);
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(ore[2].transX, ore[2].transY, ore[2].transZ));
-    rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 5.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(37.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(26.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.0f, 0.7f, 0.6f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock1_mat = glm::mat4(1.0f);
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(ore[2].transX, ore[2].transY, ore[2].transZ));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(15.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(30.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(23.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.0f, 0.7f, 0.6f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock1_mat = glm::mat4(1.0f);
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(ore[2].transX, ore[2].transY, ore[2].transZ));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(-30.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(34.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(25.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.0f, 0.7f, 0.6f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    glm::mat4 rock2_mat = glm::mat4(1.0f);
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(ore[0].transX, ore[0].transY, ore[0].transZ));
-    rock2_mat = glm::scale(rock2_mat, glm::vec3(1.f, 5.f, 1.f));
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock2_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock2_mat = glm::mat4(1.0f);
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(ore[0].transX, ore[0].transY, ore[0].transZ));
-    rock2_mat = glm::rotate(rock2_mat, glm::radians(15.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock2_mat = glm::scale(rock2_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock2_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    rock2_mat = glm::mat4(1.0f);
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(ore[0].transX, ore[0].transY, ore[0].transZ));
-    rock2_mat = glm::rotate(rock2_mat, glm::radians(-30.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock2_mat = glm::scale(rock2_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock2_mat = glm::translate(rock2_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-    StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-    glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock2_mat));
-    gs->qobj = gluNewQuadric();
-    gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-    objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-    isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-    glUniform1f(isCheck, false);
-    glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0);
-    glBindVertexArray(gs->VAO[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 GLvoid Gemstone::Reset()
@@ -295,54 +91,6 @@ GLvoid Bomb::Reset()
     bomb = NULL;
 }
 
-GLvoid Bomb::Bomb_Mat(GameShader* gs)
-{
-    SetPosition();
-    glm::mat4 bomb_mat = glm::mat4(1.0f);
-    glm::mat4 line_mat = glm::mat4(1.0f);
-    for (int i = 0; i < 50; ++i) {
-        if (bomb[i].transY > bomb[i].MaxTransY) {
-            mp_IsUp[i] = false;
-        }
-        else if (bomb[i].transY < bomb[i].MaxTransY / 2.) {
-            mp_IsUp[i] = true;
-        }
-        if (mp_IsUp[i]) bomb[i].transY += bomb[i].transY_aoc;
-        else bomb[i].transY = bomb[i].transY - bomb[i].transY_aoc;
-        bomb_mat = glm::mat4(1.0f);
-        bomb_mat = glm::translate(bomb_mat, glm::vec3(bomb[i].transX, bomb[i].transY, bomb[i].transZ));
-        bomb_mat = glm::scale(bomb_mat, glm::vec3(6.0f, 6.0f, 6.0f));
-        unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-        glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(bomb_mat));
-        gs->qobj = gluNewQuadric();
-        gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-        int objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-        unsigned isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-        glUniform1f(isCheck, false);
-        glUniform4f(objColorLocation, 0.1f, 0.1f, 0.1f, 1.0);
-        gluSphere(gs->qobj, 0.1f, 24, 24);
-        for (int j = 0; j < bomb[i].transY * 4; ++j) {
-            GLfloat a{};
-            if (j & 1) {
-                a = 90.f;
-            }
-            bomb_mat = glm::mat4(1.0f);
-
-            bomb_mat = glm::translate(bomb_mat, glm::vec3(bomb[i].transX, bomb[i].transY - j * 0.3f, bomb[i].transZ));
-            bomb_mat = glm::rotate(bomb_mat, glm::radians(a), glm::vec3(0.0f, 1.0f, 0.0f));
-            bomb_mat = glm::scale(bomb_mat, glm::vec3(0.5f, 5.0f, 0.5f));
-            StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-            glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(bomb_mat));
-            gs->qobj = gluNewQuadric();
-            gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-            objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-            isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-            glUniform1f(isCheck, false);
-            glUniform4f(objColorLocation, 0.1f, 0.1f, 0.1f, 1.0);
-            gluCylinder(gs->qobj, 0.05f, 0.05f, 0.1f, 8, 2);
-        }
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -465,26 +213,12 @@ GLvoid Bubble::Bubbles_Setting()
     }
 }
 
-GLvoid Bubble::Bubble_Mat(GameShader* gs)
-{
-    Bubbles_Setting();
-    glm::mat4 bubble_mat = glm::mat4(1.0f);
-    for (int bc = 0; bc < 100; ++bc) {
-        for (int b = 0; b < 3; ++b) {
-            bubble_mat = glm::mat4(1.0f);
-            bubble_mat = glm::translate(bubble_mat, glm::vec3(mpp_Bubble[bc][b].transX + mpp_Bubble[bc][b].transX_aoc, mpp_Bubble[bc][b].transY, mpp_Bubble[bc][b].transZ));
 
-            bubble_mat = glm::scale(bubble_mat, glm::vec3(mpp_Bubble[bc][b].scaleX, mpp_Bubble[bc][b].scaleY, mpp_Bubble[bc][b].scaleZ));
-            bubble_mat = glm::translate(bubble_mat, glm::vec3(0.0f, 0.1f, 0.0f));
-            unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
-            glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(bubble_mat));
-            gs->qobj = gluNewQuadric();
-            gluQuadricDrawStyle(gs->qobj, gs->obj_type);
-            int objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
-            unsigned isCheck = glGetUniformLocation(gs->s_program, "isCheck");
-            glUniform1f(isCheck, false);
-            glUniform4f(objColorLocation, mpp_Bubble[bc][b].color_r, mpp_Bubble[bc][b].color_g, mpp_Bubble[bc][b].color_b, 1.0);
-            gluSphere(gs->qobj, 0.1, 24, 24);
-        }
-    }
+Player::Player()
+{
+    transX = 10.0f, transY = 1.0f, transZ = 10.0f;
+}
+
+Player::~Player()
+{
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <mutex>
 #include "..\Protocol.h"
+#include "GameObject.h"
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
@@ -25,6 +26,8 @@ using namespace std;
 
 mutex clientListMutex;
 vector<ClientInfo> ClientList;
+vector<Player*> g_Players;
+
 
 
 
@@ -35,14 +38,14 @@ void StartGame() {
 	//lock_guard<mutex> lock(clientListMutex);
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
-		send(client.socket, (char*) &client.id, sizeof(int), 0);
+		send(client.socket, (char*)&client.id, sizeof(int), 0);
 	}
 }
 
 void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 	//클라이언트 한명이 로그인 하게되면,로그인상태로만든다.그리고 Vector Push 
 
-	
+
 	lock_guard<mutex> lock(clientListMutex); // clientList 스레드동시접근 방지용 
 	ClientInfo newClient;
 	newClient.socket = clientSocket->client_sock;
@@ -52,14 +55,65 @@ void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 
 	ClientList.push_back(newClient);
 
-	cout << "클라이언트 : " << "["<<newClient.id <<"]" << clientName << " " << endl;
-	
+	cout << "클라이언트 : " << "[" << newClient.id << "]" << clientName << " " << endl;
+
 	if (ClientList.size() == 3) {
 
-	
+
 		StartGame();
 		//lock_guard<mutex> unlock(&clientListMutex);
 	}
+}
+
+void SendToMove(SOCK_INFO* sock_info, char input){
+
+	switch (input) {
+	case 'w':
+	{
+		g_Players[sock_info->id]->transX -=  0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->transZ -= 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		break;
+	}
+	case 'a':
+	{
+		g_Players[sock_info->id]->rotateY += 1.f;
+		break;
+	}
+	case 's':
+	{
+		g_Players[sock_info->id]->transX += 0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->transZ += 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		break;
+	}
+	case 'd':
+	{
+		g_Players[sock_info->id]->rotateY -= 1.f;
+		break;
+	}
+	}
+	for (const auto& client : ClientList) {
+	SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+	packet_sendP->type = SC_SEND_PLAYER;
+	packet_sendP->id = sock_info->id;
+	send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+	delete packet_sendP;
+		MOVE_PACKET* packet_tr = new MOVE_PACKET;
+		ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
+
+		packet_tr->type = SC_PLAYER_MOVE;
+		packet_ro->type = SC_PLAYER_ROTATE;
+		packet_tr->fx = g_Players[sock_info->id]->transX;
+		packet_tr->fy = g_Players[sock_info->id]->transY;
+		packet_tr->fz = g_Players[sock_info->id]->transZ;
+		packet_ro->fy = g_Players[sock_info->id]->rotateY;
+		cout << sock_info->id << " " << packet_tr->fz << endl;
+			send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+			send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
+		delete packet_tr;
+		delete packet_ro;
+		}
+
+
 }
 
 
@@ -105,23 +159,12 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		{
 
 			INPUT_PACKET* packet = reinterpret_cast<INPUT_PACKET*>(buf);
-
-			cout << "["<<sock_info->id<<"]" << ", " << packet->input << endl;
-		}
-		}
-		/*else if (retval == 0)
-			break;*/
-
-		// 받은 데이터 출력
-	/*	buf[retval] = '\0';
-		printf("[TCP/%s:%d] %s\n", addr, ntohs(clientaddr.sin_port), buf);*/
-
-		// 데이터 보내기
-	/*	retval = send(client_sock, buf, retval, 0);
-		if (retval == SOCKET_ERROR) {
-			err_display("send()");
+			cout << "[" << sock_info->id << "]" << packet->input << endl;
+			SendToMove(sock_info, packet->input);
 			break;
-		}*/
+		}
+		}
+
 	}
 
 	// 소켓 닫기
@@ -165,7 +208,7 @@ int main(int argc, char* argv[])
 	struct sockaddr_in clientaddr;
 	HANDLE hThread;
 	int addrlen;
-	int i{-1};
+	int i{ -1 };
 
 	while (1) {
 		// accept()
@@ -177,6 +220,9 @@ int main(int argc, char* argv[])
 		}
 		Clients[++i].client_sock = client_sock;
 		Clients[i].id = i;
+		Player* newPlayer = new Player;
+		g_Players.push_back(newPlayer);
+
 		// 접속한 클라이언트 정보 출력
 		char addr[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
