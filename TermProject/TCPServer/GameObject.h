@@ -1,5 +1,5 @@
 #pragma once
-#include "GameShader.h"
+
 
 class GameObject
 {
@@ -50,9 +50,7 @@ public:
 	Background();
 	~Background();
 
-    GLvoid Background_Mat(GameShader* gs);
-    GLvoid Warehouse_Mat(GameShader* gs);
-
+ 
 private:
 };
 
@@ -67,7 +65,7 @@ private:
 	GLvoid SetPosition() ;
 
 public:
-    GLvoid Ore_Mat(GameShader* gs);
+
     GLvoid Reset();
 
 private:
@@ -93,7 +91,7 @@ public:
 
     GLvoid Reset();
 
-    GLvoid Bomb_Mat(GameShader* gs);
+ 
 
 };
 
@@ -116,8 +114,7 @@ private:
     GameObject** mpp_Bubble = NULL;
 
 public:
-    GLvoid Bubble_Mat(GameShader* gs);
-
+   
 
 };
 

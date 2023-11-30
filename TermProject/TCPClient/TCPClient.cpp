@@ -13,11 +13,15 @@ char* SERVERIP = (char*)"127.0.0.1";
 #define BUFSIZE    512
 
 using namespace std;
+
 struct ClientInfo {
     SOCKET socket;
     bool bisLoggedIn;
     
 };
+
+GemStonePacket receivedGemStonePacket[9];
+
 SOCKET sock;
 random_device rd;
 mt19937 gen{ rd() };
@@ -391,7 +395,7 @@ void drawScene()
         //상민
         wp_Bubble->Bubble_Mat(gs);
         bg->Background_Mat(gs);
-        wp_Gemstone->Ore_Mat(gs);
+        wp_Gemstone->Ore_Mat(gs, receivedGemStonePacket);
         wp_Bomb->Bomb_Mat(gs);
         bg->Warehouse_Mat(gs);
         //은형
@@ -568,20 +572,45 @@ GLvoid Timer(int value)
 }
 
 void SendPlayerPosition() {
-    // MOVE_PACKET 구조체 생성
+   
     MOVE_PACKET movePacket;
-    movePacket.iType = 1;  // Set the packet type as 1 (you can use different values for different types)
+    movePacket.iType = 1;  
     movePacket.fX = subMarine.trans_x;
     movePacket.fY = subMarine.trans_y;
     movePacket.fZ = subMarine.trans_z;
 
-    // 데이터를 서버에 전송
+   
     size_t bytes_sent = send(sock, (char*)&movePacket, sizeof(MOVE_PACKET), 0);
     if (bytes_sent == -1) {
-        std::cerr << "Error sending player position to server" << std::endl;
+        std::cerr << "Error" << std::endl;
     }
 }
 
+void ReceiveGemStonePacket(SOCKET serverSocket) {
+   
+
+    // 서버로부터 데이터를 받음
+    //int bytesReceived = recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket), sizeof(receivedGemStonePacket[0]), 0);
+    /*if (bytesReceived == SOCKET_ERROR) {
+        err_display("recv()");
+        return;
+    }*/
+    for (int i = 0; i < 9; ++i)
+    {
+        int bytesReceived=0;
+        recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
+        if (bytesReceived == SOCKET_ERROR) {
+            err_display("recv()");
+            return;
+        }
+    }
+    // 받은 데이터를 처리
+    //for (int i = 0; i < 9; ++i) {
+    //    // receivedGemStonePacket[i]를 이용해 클라이언트 내부에서 GemStone을 처리
+    //    // 예: cout << "Received GemStone at X: " << receivedGemStonePacket[i].fX << ", Z: " << receivedGemStonePacket[i].fZ << endl;
+    //}
+   
+}
 void SendNameToServer(SOCKET clientSocket) {
     char clientName[256];
     printf("Input Name: ");
@@ -629,6 +658,7 @@ int main(int argc, char* argv[])
     if (strcmp(cStartBuffer, "START") == 0) {
         cout << "게임이 시작되었습니다!" << endl;
     }
+    ReceiveGemStonePacket(sock);
         glutInit(&argc, argv);
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
         glutInitWindowPosition(0, 0);

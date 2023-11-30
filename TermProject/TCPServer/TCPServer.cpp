@@ -1,12 +1,17 @@
 #include "..\Common.h"
 #include <vector>
 #include <string>
+#include <stdio.h>
 #include <iostream>
 #include <mutex>
+#include <random>
+//#include "GameObject.h"
 #include "PacketStruct.h"
 #include "PacketNumber.h"
 #define SERVERPORT 9000
 #define BUFSIZE    512
+
+
 
 struct ClientInfo {
 	SOCKET socket;
@@ -14,20 +19,54 @@ struct ClientInfo {
 	std::string sName;
 
 };
+
+
 using namespace std;
 
 mutex clientListMutex;
 vector<ClientInfo> ClientList;
 
+random_device rd;
+mt19937 gen{ rd() };
+uniform_int_distribution<int> uid{ 0,2000 };
 
+float fTransX[9];
+float fTransZ[9];
+void iRandomSetting()
+{
+	for (int i = 0; i < 9; ++i)
+	{
+		fTransX[i] = uid(gen) / 100;
+		fTransZ[i] = uid(gen) / 100;
+	}
+}
+void SendGemStonePacket(SOCKET clientSocket) 
+{
+		
+		GemStonePacket GemStonePacket[9];
+	
+			for (int i = 0; i < 9; ++i) {
+
+				
+				GemStonePacket[i].fX = fTransX[i];
+				GemStonePacket[i].fY = 0;             //그냥 초기화
+				GemStonePacket[i].fZ = fTransZ[i];
+				GemStonePacket->cType = PACKET_GEMSTONE;
+
+				// 데이터를 클라이언트에게 보냄
+				send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
+			}
+}
 
 void StartGame() {
 	cout << "게임시작Test용" << endl;
 
 	//게임이 시작되었음을 클라이언트한테 알린다. 
 	//lock_guard<mutex> lock(clientListMutex);
+	iRandomSetting();
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
+		SendGemStonePacket(client.socket);
 	}
 	
 
@@ -48,10 +87,14 @@ void HandleLogin(SOCKET clientSocket, const string& clientName) {
 	cout << "클라이언트 : " << clientName << " " << endl;
 	
 	if (ClientList.size() == 3) {
-
 	
-		StartGame();
-		//lock_guard<mutex> unlock(clientListMutex);
+		for (const auto& client : ClientList) {
+			
+
+
+			StartGame();
+			//lock_guard<mutex> unlock(clientListMutex);
+		}
 	}
 }
 
@@ -95,7 +138,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
 		// 받은 데이터 출력
 		buf[retval] = '\0';
-		printf("[TCP/%s:%d] %s\n", addr, ntohs(clientaddr.sin_port), buf);
+		std::printf("[TCP/%s:%d] %s\n", addr, ntohs(clientaddr.sin_port), buf);
 
 		// 데이터 보내기
 		retval = send(client_sock, buf, retval, 0);
@@ -114,7 +157,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
 		// MOVE_PACKET 처리
 		printf("[TCP/%s:%d] Received MOVE_PACKET: Type=%d, X=%f, Y=%f, Z=%f\n",
-			addr, ntohs(clientaddr.sin_port), movePacket.iType, movePacket.fX, movePacket.fY, movePacket.fZ);
+			addr, ntohs(clientaddr.sin_port), movePacket.cType, movePacket.fX, movePacket.fY, movePacket.fZ);
 
 	}
 
