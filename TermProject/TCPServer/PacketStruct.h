@@ -1,13 +1,8 @@
 #pragma once
-
-struct SOCK_INFO {
-	SOCKET client_sock = NULL;
-	int id = 0;
-
-	SOCK_INFO* GetSockInfo() { return this; }
+// 예시로 구조체 정의
+struct MOVE_PACKET {
+	char cType;
+	float fX, fY, fZ;
 };
 
-struct MOVE_PACKET{
-	char type;
-	float fx, fy, fz;
-};
+

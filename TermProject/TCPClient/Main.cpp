@@ -375,7 +375,7 @@ void drawScene()
         //»ó¹Î
         wp_Bubble->Bubble_Mat(gs);
         bg->Background_Mat(gs);
-        wp_Gemstone->Ore_Mat(gs);
+        wp_Gemstone->Ore_Mat(gs, );
         wp_Bomb->Bomb_Mat(gs);
         bg->Warehouse_Mat(gs);
         //ÀºÇü

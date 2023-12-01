@@ -60,7 +60,6 @@ public:
 	Background();
 	~Background();
 
-    GLvoid Warehouse_Mat(GameShader* gs);
 
 private:
 };

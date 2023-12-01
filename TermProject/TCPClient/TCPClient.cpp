@@ -24,8 +24,8 @@ struct SOCK_INFO {
 };
 
 GemStonePacket receivedGemStonePacket[9];
+float fGemstoneX[9], fGemstoneY[9], fGemstoneZ[9];
 
-SOCKET sock;
 random_device rd;
 mt19937 gen{ rd() };
 
@@ -401,7 +401,7 @@ void drawScene()
 		//상민
 		wp_Bubble->Bubble_Mat(gs);
 		bg->Background_Mat(gs);
-		wp_Gemstone->Ore_Mat(gs);
+		wp_Gemstone->Ore_Mat(gs, fGemstoneX, fGemstoneY, fGemstoneZ);
 		wp_Bomb->Bomb_Mat(gs);
 		bg->Warehouse_Mat(gs);
 		//은형
@@ -411,21 +411,22 @@ void drawScene()
 		subMarine_collison();
 		subMarine_Catch();
 	}
-        }
-        //상민
-        wp_Bubble->Bubble_Mat(gs);
-        bg->Background_Mat(gs);
-        wp_Gemstone->Ore_Mat(gs, receivedGemStonePacket);
-        wp_Bomb->Bomb_Mat(gs);
-        bg->Warehouse_Mat(gs);
-        //은형
-        Draw_SubMarine();
-        subMarine_collison();
-        subMarine_Catch();
-    }
-
 	glutSwapBuffers();
 }
+//        //상민
+//        wp_Bubble->Bubble_Mat(gs);
+//        bg->Background_Mat(gs);
+//        wp_Gemstone->Ore_Mat(gs, receivedGemStonePacket);
+//        wp_Bomb->Bomb_Mat(gs);
+//        bg->Warehouse_Mat(gs);
+//        //은형
+//        Draw_SubMarine();
+//        subMarine_collison();
+//        subMarine_Catch();
+//    }
+//
+//	
+//}
 GLvoid KeyBoardUp(unsigned char key, int x, int y) {
 	switch (key)
 	{
@@ -616,44 +617,35 @@ GLvoid Timer(int value)
 
 void SendPlayerPosition() {
    
-    MOVE_PACKET movePacket;
-    movePacket.iType = 1;  
-    movePacket.fX = subMarine.trans_x;
-    movePacket.fY = subMarine.trans_y;
-    movePacket.fZ = subMarine.trans_z;
+    //MOVE_PACKET movePacket;
+    //movePacket.iType = 1;  
+    //movePacket.fX = subMarine.trans_x;
+    //movePacket.fY = subMarine.trans_y;
+    //movePacket.fZ = subMarine.trans_z;
 
    
-    size_t bytes_sent = send(sock, (char*)&movePacket, sizeof(MOVE_PACKET), 0);
-    if (bytes_sent == -1) {
-        std::cerr << "Error" << std::endl;
-    }
+    //size_t bytes_sent = send(sock, (char*)&movePacket, sizeof(MOVE_PACKET), 0);
+    //if (bytes_sent == -1) {
+    //    std::cerr << "Error" << std::endl;
+    //}
 }
 
 void ReceiveGemStonePacket(SOCKET serverSocket) {
-   
-
-    // 서버로부터 데이터를 받음
-    //int bytesReceived = recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket), sizeof(receivedGemStonePacket[0]), 0);
-    /*if (bytesReceived == SOCKET_ERROR) {
-        err_display("recv()");
-        return;
-    }*/
     for (int i = 0; i < 9; ++i)
     {
         int bytesReceived=0;
         recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
+		fGemstoneX[i] = receivedGemStonePacket[i].fX;
+		fGemstoneY[i] = receivedGemStonePacket[i].fY;
+		fGemstoneZ[i] = receivedGemStonePacket[i].fZ;
         if (bytesReceived == SOCKET_ERROR) {
             err_display("recv()");
             return;
         }
     }
-    // 받은 데이터를 처리
-    //for (int i = 0; i < 9; ++i) {
-    //    // receivedGemStonePacket[i]를 이용해 클라이언트 내부에서 GemStone을 처리
-    //    // 예: cout << "Received GemStone at X: " << receivedGemStonePacket[i].fX << ", Z: " << receivedGemStonePacket[i].fZ << endl;
-    //}
-   
+
 }
+
 void SendNameToServer(SOCKET clientSocket) {
 	char clientName[256];
 	printf("Input Name: ");
@@ -767,6 +759,7 @@ int main(int argc, char* argv[])
 		if (hThread == NULL) { closesocket(sock); }
 		else { CloseHandle(hThread); }
 	}
+	ReceiveGemStonePacket(sock);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -775,23 +768,6 @@ int main(int argc, char* argv[])
 	glutCreateWindow("BLUE HOLE");
 	for(int i=0;i<3;++i)
 	Setting(i);
-
-	
-   
-    // 서버로부터의 게임 시작 여부 확인
-    char cStartBuffer[BUFSIZE] = "";
-    recv(sock, (char*)cStartBuffer, sizeof(cStartBuffer), 0);
-    cStartBuffer[5] = '\0';
-    if (strcmp(cStartBuffer, "START") == 0) {
-        cout << "게임이 시작되었습니다!" << endl;
-    }
-    ReceiveGemStonePacket(sock);
-        glutInit(&argc, argv);
-        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-        glutInitWindowPosition(0, 0);
-        glutInitWindowSize(width, height);
-        glutCreateWindow("BLUE HOLE");
-        Setting();
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)

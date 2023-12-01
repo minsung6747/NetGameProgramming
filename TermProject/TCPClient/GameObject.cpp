@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "GameObject.h"
-#include "PacketStruct.h"
+
 GameObject::GameObject()
 {
 }
@@ -97,12 +97,15 @@ GLvoid Gemstone::SetPosition()
 		}
 	}
 }
-GLvoid Gemstone::Ore_Mat(GameShader* gs,  const GemStonePacket receivedData[9])
+GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
 {
-    GemStonePacket m_ReceivedData[9];
+    GemstoneData m_ReceivedData[9];
+
     for (int i = 0; i < 9; ++i)
     {
-        m_ReceivedData[i] = receivedData[i];
+        m_ReceivedData[i].fX = fX[i];
+        m_ReceivedData[i].fY = fY[i];
+        m_ReceivedData[i].fZ = fZ[i];
     }
     
     //SetPosition();

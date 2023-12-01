@@ -8,8 +8,8 @@
 #include "GameObject.h"
 #include <random>
 //#include "GameObject.h"
-#include "PacketStruct.h"
-#include "PacketNumber.h"
+//#include "PacketStruct.h"
+//#include "PacketNumber.h"
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
