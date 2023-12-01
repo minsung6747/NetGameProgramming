@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
+
 class GameObject
 {
 public:
@@ -58,6 +59,8 @@ class Background :public GameObject {
 public:
 	Background();
 	~Background();
+
+    GLvoid Warehouse_Mat(GameShader* gs);
 
 private:
 };

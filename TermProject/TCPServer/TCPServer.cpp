@@ -1,12 +1,19 @@
 #include "..\Common.h"
 #include <vector>
 #include <string>
+#include <stdio.h>
 #include <iostream>
 #include <mutex>
 #include "..\Protocol.h"
 #include "GameObject.h"
+#include <random>
+//#include "GameObject.h"
+#include "PacketStruct.h"
+#include "PacketNumber.h"
 #define SERVERPORT 9000
 #define BUFSIZE    512
+
+
 
 struct ClientInfo {
 	SOCKET socket;
@@ -28,18 +35,51 @@ mutex clientListMutex;
 vector<ClientInfo> ClientList;
 vector<Player*> g_Players;
 
+random_device rd;
+mt19937 gen{ rd() };
+uniform_int_distribution<int> uid{ 0,2000 };
 
+float fTransX[9];
+float fTransZ[9];
+void iRandomSetting()
+{
+	for (int i = 0; i < 9; ++i)
+	{
+		fTransX[i] = uid(gen) / 100;
+		fTransZ[i] = uid(gen) / 100;
+	}
+}
+void SendGemStonePacket(SOCKET clientSocket) 
+{
+		
+		GemStonePacket GemStonePacket[9];
+	
+			for (int i = 0; i < 9; ++i) {
 
+				
+				GemStonePacket[i].fX = fTransX[i];
+				GemStonePacket[i].fY = 0;             //그냥 초기화
+				GemStonePacket[i].fZ = fTransZ[i];
+				GemStonePacket->cType = PACKET_GEMSTONE;
+
+				// 데이터를 클라이언트에게 보냄
+				send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
+			}
+}
 
 void StartGame() {
 	cout << "게임시작Test용" << endl;
 
 	//게임이 시작되었음을 클라이언트한테 알린다. 
 	//lock_guard<mutex> lock(clientListMutex);
+	iRandomSetting();
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
+		SendGemStonePacket(client.socket);
 	}
+	
+
 }
 
 void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {

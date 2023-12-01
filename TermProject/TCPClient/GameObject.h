@@ -1,6 +1,6 @@
 #pragma once
 #include "GameShader.h"
-
+#include "PacketStruct.h"
 class GameObject
 {
 public:
@@ -67,7 +67,7 @@ private:
 	GLvoid SetPosition() ;
 
 public:
-    GLvoid Ore_Mat(GameShader* gs);
+    GLvoid Ore_Mat(GameShader* gs, const GemStonePacket receivedData[9]);
     GLvoid Reset();
 
 private:

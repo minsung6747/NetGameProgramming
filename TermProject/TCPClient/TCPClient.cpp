@@ -23,6 +23,9 @@ struct SOCK_INFO {
 	SOCK_INFO* GetSockInfo() { return this; }
 };
 
+GemStonePacket receivedGemStonePacket[9];
+
+SOCKET sock;
 random_device rd;
 mt19937 gen{ rd() };
 
@@ -45,7 +48,7 @@ GLvoid SpecialKeyBoardUp(int, int, int);
 GLvoid Timer(int);
 GLvoid MouseChange(int, int);
 GLvoid Mouse(int, int);
-
+void SendPlayerPosition();
 typedef struct object {
 	float trans_x{}, trans_y{}, trans_z{};               // 기본 좌표값
 	float trans_x_aoc{}, trans_y_aoc{}, trans_z_aoc{};      // 좌표 변화량 aoc - amount of change
@@ -408,6 +411,18 @@ void drawScene()
 		subMarine_collison();
 		subMarine_Catch();
 	}
+        }
+        //상민
+        wp_Bubble->Bubble_Mat(gs);
+        bg->Background_Mat(gs);
+        wp_Gemstone->Ore_Mat(gs, receivedGemStonePacket);
+        wp_Bomb->Bomb_Mat(gs);
+        bg->Warehouse_Mat(gs);
+        //은형
+        Draw_SubMarine();
+        subMarine_collison();
+        subMarine_Catch();
+    }
 
 	glutSwapBuffers();
 }
@@ -599,7 +614,46 @@ GLvoid Timer(int value)
 	glutTimerFunc(5, Timer, 1);
 }
 
+void SendPlayerPosition() {
+   
+    MOVE_PACKET movePacket;
+    movePacket.iType = 1;  
+    movePacket.fX = subMarine.trans_x;
+    movePacket.fY = subMarine.trans_y;
+    movePacket.fZ = subMarine.trans_z;
 
+   
+    size_t bytes_sent = send(sock, (char*)&movePacket, sizeof(MOVE_PACKET), 0);
+    if (bytes_sent == -1) {
+        std::cerr << "Error" << std::endl;
+    }
+}
+
+void ReceiveGemStonePacket(SOCKET serverSocket) {
+   
+
+    // 서버로부터 데이터를 받음
+    //int bytesReceived = recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket), sizeof(receivedGemStonePacket[0]), 0);
+    /*if (bytesReceived == SOCKET_ERROR) {
+        err_display("recv()");
+        return;
+    }*/
+    for (int i = 0; i < 9; ++i)
+    {
+        int bytesReceived=0;
+        recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
+        if (bytesReceived == SOCKET_ERROR) {
+            err_display("recv()");
+            return;
+        }
+    }
+    // 받은 데이터를 처리
+    //for (int i = 0; i < 9; ++i) {
+    //    // receivedGemStonePacket[i]를 이용해 클라이언트 내부에서 GemStone을 처리
+    //    // 예: cout << "Received GemStone at X: " << receivedGemStonePacket[i].fX << ", Z: " << receivedGemStonePacket[i].fZ << endl;
+    //}
+   
+}
 void SendNameToServer(SOCKET clientSocket) {
 	char clientName[256];
 	printf("Input Name: ");
@@ -723,6 +777,21 @@ int main(int argc, char* argv[])
 	Setting(i);
 
 	
+   
+    // 서버로부터의 게임 시작 여부 확인
+    char cStartBuffer[BUFSIZE] = "";
+    recv(sock, (char*)cStartBuffer, sizeof(cStartBuffer), 0);
+    cStartBuffer[5] = '\0';
+    if (strcmp(cStartBuffer, "START") == 0) {
+        cout << "게임이 시작되었습니다!" << endl;
+    }
+    ReceiveGemStonePacket(sock);
+        glutInit(&argc, argv);
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+        glutInitWindowPosition(0, 0);
+        glutInitWindowSize(width, height);
+        glutCreateWindow("BLUE HOLE");
+        Setting();
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
