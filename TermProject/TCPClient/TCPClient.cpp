@@ -625,35 +625,32 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	while (1) {
 		// 데이터 받기
 		retval = recv(server_sock, buf, BUFSIZE, 0);
-		switch (buf[0]) {
-		case SC_SEND_PLAYER:
-			{
-				SEND_PLAYER* packet_sp = reinterpret_cast<SEND_PLAYER*>(buf);
-				int id = packet_sp->id;
-				for (int i = 0;i < 2;++i) {
-					retval = recv(server_sock, buf, BUFSIZE, 0);
-					if (retval == SOCKET_ERROR) {
-						err_display("recv()");
-						break;
-					}
-					switch (buf[0]) {
-					case SC_PLAYER_MOVE:
-					{
-						MOVE_PACKET* packet_tr = reinterpret_cast<MOVE_PACKET*>(buf);
-						subMarine[id].trans_x = packet_tr->fx;
-						subMarine[id].trans_y = packet_tr->fy;
-						subMarine[id].trans_z = packet_tr->fz;
-						std::cout << id << " " << packet_tr->fz << endl;
-						break;
-					}
-					case SC_PLAYER_ROTATE:
-					{
-						ROTATE_PACKET* packet_ro = reinterpret_cast<ROTATE_PACKET*>(buf);
-						subMarine[id].rotate_y = packet_ro->fy;
-						//std::cout << packet_ro->fy << endl;
-						break;
-					}
-					}
+		if (buf[0] == SC_SEND_PLAYER) {
+			SEND_PLAYER* packet_sp = reinterpret_cast<SEND_PLAYER*>(buf);
+			int id = packet_sp->id;
+			for (int i = 0;i < 2;++i) {
+				retval = recv(server_sock, buf, BUFSIZE, 0);
+				if (retval == SOCKET_ERROR) {
+					err_display("recv()");
+					break;
+				}
+				switch (buf[0]) {
+				case SC_PLAYER_MOVE:
+				{
+					MOVE_PACKET* packet_tr = reinterpret_cast<MOVE_PACKET*>(buf);
+					subMarine[id].trans_x = packet_tr->fx;
+					subMarine[id].trans_y = packet_tr->fy;
+					subMarine[id].trans_z = packet_tr->fz;
+					std::cout << id << " " << packet_tr->fz << endl;
+					break;
+				}
+				case SC_PLAYER_ROTATE:
+				{
+					ROTATE_PACKET* packet_ro = reinterpret_cast<ROTATE_PACKET*>(buf);
+					subMarine[id].rotate_y = packet_ro->fy;
+					//std::cout << packet_ro->fy << endl;
+					break;
+				}
 				}
 			}
 		}
