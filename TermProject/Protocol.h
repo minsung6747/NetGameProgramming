@@ -14,6 +14,7 @@ extern char  PACKET_GEMSTONE = 4;
 struct MOVE_PACKET {
 	char type;
 	float fx, fy, fz;
+	float fro;
 };
 
 struct INPUT_PACKET {

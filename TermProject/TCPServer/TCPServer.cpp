@@ -7,6 +7,8 @@
 #include "..\Protocol.h"
 #include "GameObject.h"
 #include <random>
+#include <chrono>
+
 //#include "GameObject.h"
 //#include "PacketStruct.h"
 //#include "PacketNumber.h"
@@ -131,27 +133,28 @@ void SendToMove(SOCK_INFO* sock_info, char input){
 		break;
 	}
 	}
-	for (const auto& client : ClientList) {
-	SEND_PLAYER* packet_sendP = new SEND_PLAYER;
-	packet_sendP->type = SC_SEND_PLAYER;
-	packet_sendP->id = sock_info->id;
-	send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
-	delete packet_sendP;
-		MOVE_PACKET* packet_tr = new MOVE_PACKET;
-		ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
+	//for (const auto& client : ClientList) {
+	//SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+	//packet_sendP->type = SC_SEND_PLAYER;
+	//packet_sendP->id = sock_info->id;
+	//send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+	//delete packet_sendP;
+	//MOVE_PACKET* packet_tr = new MOVE_PACKET;
+	////ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
 
-		packet_tr->type = SC_PLAYER_MOVE;
-		packet_ro->type = SC_PLAYER_ROTATE;
-		packet_tr->fx = g_Players[sock_info->id]->transX;
-		packet_tr->fy = g_Players[sock_info->id]->transY;
-		packet_tr->fz = g_Players[sock_info->id]->transZ;
-		packet_ro->fy = g_Players[sock_info->id]->rotateY;
-		cout << sock_info->id << " " << packet_tr->fz << endl;
-			send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
-			send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
-		delete packet_tr;
-		delete packet_ro;
-		}
+	//packet_tr->type = SC_PLAYER_MOVE;
+	////packet_ro->type = SC_PLAYER_ROTATE;
+	//packet_tr->fx = g_Players[sock_info->id]->transX;
+	//packet_tr->fy = g_Players[sock_info->id]->transY;
+	//packet_tr->fz = g_Players[sock_info->id]->transZ;
+	//packet_tr->fro = g_Players[sock_info->id]->rotateY;
+	////packet_ro->fy = g_Players[sock_info->id]->rotateY;
+	//cout << sock_info->id << " " << packet_tr->fz << endl;
+	//send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+	////send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
+	//delete packet_tr;
+	////delete packet_ro;
+	//}
 
 
 }
@@ -214,7 +217,55 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	return 0;
 }
 
+DWORD WINAPI SendClient(LPVOID arg)
+{
 
+	int retval;
+	SOCK_INFO* sock_info = reinterpret_cast<SOCK_INFO*> (arg);
+
+	SOCKET client_sock = sock_info->client_sock;
+	struct sockaddr_in clientaddr;
+	char addr[INET_ADDRSTRLEN];
+	int addrlen;
+	char buf[BUFSIZE + 1];
+
+	while (1) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+			if (ClientList.size() == 3) {
+
+				for (const auto& client : ClientList) {
+					SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+					packet_sendP->type = SC_SEND_PLAYER;
+					packet_sendP->id = sock_info->id;
+					MOVE_PACKET* packet_tr = new MOVE_PACKET;
+					//ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
+
+					packet_tr->type = SC_PLAYER_MOVE;
+					//packet_ro->type = SC_PLAYER_ROTATE;
+					packet_tr->fx = g_Players[sock_info->id]->transX;
+					packet_tr->fy = g_Players[sock_info->id]->transY;
+					packet_tr->fz = g_Players[sock_info->id]->transZ;
+					packet_tr->fro = g_Players[sock_info->id]->rotateY;
+					//packet_ro->fy = g_Players[sock_info->id]->rotateY;
+					cout << sock_info->id << " " << packet_tr->fz << endl;
+					lock_guard<mutex> lock(clientListMutex);
+					send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+					send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+
+					//send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
+					delete packet_sendP;
+					delete packet_tr;
+					//delete packet_ro;
+				}
+			}
+
+	}
+		// 소켓 닫기
+		closesocket(client_sock);
+		printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
+			addr, ntohs(clientaddr.sin_port));
+		return 0;
+}
 
 int main(int argc, char* argv[])
 {
@@ -243,10 +294,11 @@ int main(int argc, char* argv[])
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
 	// 데이터 통신에 사용할 변수
+	
 	SOCK_INFO* Clients = new SOCK_INFO[3];
 	SOCKET client_sock;
 	struct sockaddr_in clientaddr;
-	HANDLE hThread;
+	HANDLE hThread, hSendThread;
 	int addrlen;
 	int i{ -1 };
 
@@ -258,6 +310,7 @@ int main(int argc, char* argv[])
 			err_display("accept()");
 			break;
 		}
+		lock_guard<mutex> lock(clientListMutex);
 		Clients[++i].client_sock = client_sock;
 		Clients[i].id = i;
 		Player* newPlayer = new Player;
@@ -274,6 +327,10 @@ int main(int argc, char* argv[])
 			reinterpret_cast<LPVOID*>(Clients[i].GetSockInfo()), 0, NULL);
 		if (hThread == NULL) { closesocket(client_sock); }
 		else { CloseHandle(hThread); }
+		hSendThread = CreateThread(NULL, 0, SendClient,
+			reinterpret_cast<LPVOID*>(Clients[i].GetSockInfo()), 0, NULL);
+		if (hSendThread == NULL) { closesocket(client_sock); }
+		else { CloseHandle(hSendThread); }
 	}
 
 	// 소켓 닫기
