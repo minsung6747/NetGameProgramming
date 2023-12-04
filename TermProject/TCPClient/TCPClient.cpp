@@ -24,6 +24,7 @@ struct SOCK_INFO {
 };
 
 GemStonePacket receivedGemStonePacket[9];
+BombPacket receivedBombPacket[50];
 float fGemstoneX[9], fGemstoneY[9], fGemstoneZ[9];
 
 random_device rd;

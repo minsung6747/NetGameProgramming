@@ -5,6 +5,7 @@ constexpr char SC_KEY_INPUT = 1;
 constexpr char SC_PLAYER_ROTATE = 2;
 constexpr char SC_SEND_PLAYER = 3;
 extern char  PACKET_GEMSTONE = 4;
+extern char	 PACKET_BOMB = 5;
 
 
 // 예시로 구조체 정의
@@ -34,4 +35,11 @@ struct SEND_PLAYER {
 struct GemStonePacket {
 	char cType;
 	float fX, fY, fZ;
+};
+
+struct BombPacket {
+	char cType;
+	float fX, fY, fZ;
+	float fMaxY;
+	float fAocY;
 };

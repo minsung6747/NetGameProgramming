@@ -38,47 +38,84 @@ vector<Player*> g_Players;
 random_device rd;
 mt19937 gen{ rd() };
 uniform_int_distribution<int> uid{ 0,2000 };
+uniform_int_distribution<int> uid_fY{ 20,70 };
+uniform_int_distribution<int> uid_fY_Aoc{ 1,2 };
 
-float fTransX[9];
-float fTransZ[9];
-void iRandomSetting()
+float fGemStoneX[9];
+float fGemStoneZ[9];
+float fBombX[50];
+float fBombY[50];
+float fBombZ[50];
+float fBombMaxY[50];
+float fBombAocY[50];
+
+void BombSetting()
+{
+	for (int i = 0; i < 50; ++i)
+	{
+		fBombX[i] = uid(gen) / 100.;
+		fBombZ[i] = uid(gen) / 100.;
+		fBombMaxY[i] = uid_fY(gen) / 10.;
+		fBombY[i] = fBombMaxY[i];
+		fBombAocY[i] = uid_fY_Aoc(gen) / 100.;
+	}
+}
+void GemStoneSetting()
 {
 	for (int i = 0; i < 9; ++i)
 	{
-		fTransX[i] = uid(gen) / 100;
-		fTransZ[i] = uid(gen) / 100;
+		fGemStoneX[i] = uid(gen) / 100;
+		fGemStoneZ[i] = uid(gen) / 100;
 	}
 }
-void SendGemStonePacket(SOCKET clientSocket) 
+void SendBombPacket(SOCKET clientSocket)
 {
-		
-		GemStonePacket GemStonePacket[9];
-	
-			for (int i = 0; i < 9; ++i) {
+	BombPacket BombPacket[50];
 
-				
-				GemStonePacket[i].fX = fTransX[i];
-				GemStonePacket[i].fY = 0;             //그냥 초기화
-				GemStonePacket[i].fZ = fTransZ[i];
-				GemStonePacket->cType = PACKET_GEMSTONE;
+	for (int i = 0; i < 50; ++i) {
+		BombPacket[i].fX = fBombX[i];
+		BombPacket[i].fZ = fBombZ[i];
+		BombPacket[i].fMaxY = fBombMaxY[i];
+		BombPacket[i].fY = BombPacket[i].fMaxY;
+		BombPacket[i].fAocY = fBombAocY[i];
 
-				// 데이터를 클라이언트에게 보냄
-				send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
-			}
+		send(clientSocket, reinterpret_cast<char*>(&BombPacket[i]), sizeof(BombPacket[0]), 0);
+	}
 }
+void SendGemStonePacket(SOCKET clientSocket)
+{
+
+	GemStonePacket GemStonePacket[9];
+
+	for (int i = 0; i < 9; ++i) {
+
+
+		GemStonePacket[i].fX = fGemStoneX[i];
+		GemStonePacket[i].fY = 0;             //그냥 초기화
+		GemStonePacket[i].fZ = fGemStoneZ[i];
+		GemStonePacket->cType = PACKET_GEMSTONE;
+
+		// 데이터를 클라이언트에게 보냄
+		send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
+	}
+}
+
+
 
 void StartGame() {
 	cout << "게임시작Test용" << endl;
 
 	//게임이 시작되었음을 클라이언트한테 알린다. 
 	//lock_guard<mutex> lock(clientListMutex);
-	iRandomSetting();
+	GemStoneSetting();
+	BombSetting();
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
 		SendGemStonePacket(client.socket);
+		SendBombPacket(client.socket);
 	}
-	
+
 
 }
 
@@ -105,12 +142,12 @@ void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 	}
 }
 
-void SendToMove(SOCK_INFO* sock_info, char input){
+void SendToMove(SOCK_INFO* sock_info, char input) {
 
 	switch (input) {
 	case 'w':
 	{
-		g_Players[sock_info->id]->transX -=  0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->transX -= 0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
 		g_Players[sock_info->id]->transZ -= 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
 		break;
 	}
@@ -132,11 +169,11 @@ void SendToMove(SOCK_INFO* sock_info, char input){
 	}
 	}
 	for (const auto& client : ClientList) {
-	SEND_PLAYER* packet_sendP = new SEND_PLAYER;
-	packet_sendP->type = SC_SEND_PLAYER;
-	packet_sendP->id = sock_info->id;
-	send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
-	delete packet_sendP;
+		SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+		packet_sendP->type = SC_SEND_PLAYER;
+		packet_sendP->id = sock_info->id;
+		send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+		delete packet_sendP;
 		MOVE_PACKET* packet_tr = new MOVE_PACKET;
 		ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
 
@@ -147,11 +184,11 @@ void SendToMove(SOCK_INFO* sock_info, char input){
 		packet_tr->fz = g_Players[sock_info->id]->transZ;
 		packet_ro->fy = g_Players[sock_info->id]->rotateY;
 		cout << sock_info->id << " " << packet_tr->fz << endl;
-			send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
-			send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
+		send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+		send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
 		delete packet_tr;
 		delete packet_ro;
-		}
+	}
 
 
 }
