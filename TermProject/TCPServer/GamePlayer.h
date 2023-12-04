@@ -8,7 +8,7 @@ public:
 	GamePlayer();
 	~GamePlayer();
     GLvoid subMarine_Catch();
-	GLvoid Draw_SubMarine(GameShader* gs);
+	
 
 private:
 	GLfloat rot;

@@ -1,6 +1,6 @@
 #pragma once
 #include "GameShader.h"
-
+//#include "..\Protocol.h"
 class GameObject
 {
 public:
@@ -56,6 +56,11 @@ public:
 private:
 };
 
+struct GemstoneData {
+    char type;
+    float fX, fY, fZ;
+};
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Gemstone :public GameObject
 {
@@ -63,11 +68,12 @@ public:
     Gemstone();
     ~Gemstone();
 
+
 private:
 	GLvoid SetPosition() ;
 
 public:
-    GLvoid Ore_Mat(GameShader* gs);
+    GLvoid Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9]);
     GLvoid Reset();
 
 private:
