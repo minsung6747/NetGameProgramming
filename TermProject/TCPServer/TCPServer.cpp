@@ -43,19 +43,60 @@ float fTransX[9];
 float fTransZ[9];
 void iRandomSetting()
 {
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < 9; i++)
 	{
+		bool bOverlap = false; // 다른 젬스톤과 겹치는지 여부
+		bool bCenterpos = false; // 가운데에 있는지 여부
+		const float overlapSize = 1.5f; // 겹침 판정 크기 (임시)
+
+		// 좌표 지정
 		fTransX[i] = uid(gen) / 100;
 		fTransZ[i] = uid(gen) / 100;
 
-		// 가운데로부터 거리
-		float fLengthFromCenter = sqrt(fTransX[i] * fTransX[i] + fTransZ[i] * fTransZ[i]);
+		while (1) {
 
-		// 원기둥 범위를 넘어가는 경우
-		if (fLengthFromCenter >= 20.f) {
-			// 해당 비율만큼 나눠 안으로 넣는다
-			fTransX[i] *= (20.f / fLengthFromCenter);
-			fTransZ[i] *= (20.f / fLengthFromCenter);
+			// 가운데로부터 거리
+			float fLengthFromCenter = sqrt(fTransX[i] * fTransX[i] + fTransZ[i] * fTransZ[i]);
+
+			// 원기둥 범위를 넘어가는 경우
+			if (fLengthFromCenter >= 15.f) {
+				// 해당 비율만큼 나눠 안으로 넣는다
+				fTransX[i] *= (15.f / fLengthFromCenter);
+				fTransZ[i] *= (15.f / fLengthFromCenter);
+			}
+			
+			bOverlap = false; // 다른 젬스톤과 겹치는지 여부
+			bCenterpos = false; // 가운데에 있는지 여부
+
+			// 이전 젬스톤 좌표들과 겹치는지를 판정
+			for (int j = 0; j < i; j++) {
+				if ((fTransX[i] <= fTransX[j] + overlapSize)
+					&& (fTransX[i] >= fTransX[j] - overlapSize)
+					&& (fTransZ[i] <= fTransZ[j] + overlapSize)
+					&& (fTransZ[i] >= fTransZ[j] - overlapSize))
+				{
+					bOverlap = true;
+				}
+			}
+
+			// 가운데에 있는지 여부
+			if ((fTransX[i] <= 3.f)
+				&& (fTransX[i] >= -3.f)
+				&& (fTransZ[i] <= 3.f)
+				&& (fTransZ[i] >= -3.f))
+			{
+				bCenterpos = true;
+			}
+			
+			// 겹치지 않고 가운데에 있지 않는다면 루프에서 나온다
+			if (!bOverlap && !bCenterpos) break;
+
+			// 겹친다면 좌표를 재지정하고 루프를 재실행한다
+			else {
+				// 좌표 재지정
+				fTransX[i] = uid(gen) / 100;
+				fTransZ[i] = uid(gen) / 100;
+			}
 		}
 
 		printf("[%d]번째 GemStone x, z 좌표 : [%.2f, %.2f]\n", i, fTransX[i], fTransZ[i]);
@@ -67,7 +108,7 @@ void SendGemStonePacket(SOCKET clientSocket)
 		
 		GemStonePacket GemStonePacket[9];
 	
-			for (int i = 0; i < 9; ++i) {
+			for (int i = 0; i < 9; i++) {
 
 				
 				GemStonePacket[i].fX = fTransX[i];

@@ -117,8 +117,9 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     int icolorramount = 0; // red GemStone amount
     int icolorbamount = 0; // blue GemStone amount
     
-
     std::uniform_int_distribution<int> rndcolor(1, 3);
+
+    ////////// GemStone 1 //////////
     
     //SetPosition();
     glm::mat4 rock_mat = glm::mat4(1.0f);
@@ -198,6 +199,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    ////////// GemStone 2 //////////
+
     glm::mat4 rock1_mat = glm::mat4(1.0f);
     rock1_mat = glm::translate(rock1_mat, glm::vec3(m_ReceivedData[1].fX, m_ReceivedData[1].fY, m_ReceivedData[1].fZ));
     rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 5.f, 1.f));
@@ -274,6 +277,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    ////////// GemStone 3 //////////
+
     glm::mat4 rock2_mat = glm::mat4(1.0f);
     rock2_mat = glm::translate(rock2_mat, glm::vec3(m_ReceivedData[2].fX, m_ReceivedData[2].fY, m_ReceivedData[2].fZ));
     rock2_mat = glm::scale(rock2_mat, glm::vec3(1.f, 5.f, 1.f));
@@ -343,6 +348,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
 
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    ////////// GemStone 4 //////////
 
     glm::mat4 rock3_mat = glm::mat4(1.0f);
     rock3_mat = glm::translate(rock3_mat, glm::vec3(m_ReceivedData[3].fX, m_ReceivedData[3].fY, m_ReceivedData[3].fZ));
@@ -414,6 +421,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    ////////// GemStone 5 //////////
+
     glm::mat4 rock4_mat = glm::mat4(1.0f);
     rock4_mat = glm::translate(rock4_mat, glm::vec3(m_ReceivedData[4].fX, m_ReceivedData[4].fY, m_ReceivedData[4].fZ));
     rock4_mat = glm::scale(rock4_mat, glm::vec3(1.f, 5.f, 1.f));
@@ -483,6 +492,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
 
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    ////////// GemStone 6 //////////
 
     glm::mat4 rock5_mat = glm::mat4(1.0f);
     rock5_mat = glm::translate(rock5_mat, glm::vec3(m_ReceivedData[5].fX, m_ReceivedData[5].fY, m_ReceivedData[5].fZ));
@@ -554,6 +565,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    ////////// GemStone 7 //////////
+
     glm::mat4 rock6_mat = glm::mat4(1.0f);
     rock6_mat = glm::translate(rock6_mat, glm::vec3(m_ReceivedData[6].fX, m_ReceivedData[6].fY, m_ReceivedData[6].fZ));
     rock6_mat = glm::scale(rock6_mat, glm::vec3(1.f, 5.f, 1.f));
@@ -624,6 +637,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    ////////// GemStone 8 //////////
+
     glm::mat4 rock7_mat = glm::mat4(1.0f);
     rock7_mat = glm::translate(rock7_mat, glm::vec3(m_ReceivedData[7].fX, m_ReceivedData[7].fY, m_ReceivedData[7].fZ));
     rock7_mat = glm::scale(rock7_mat, glm::vec3(1.f, 5.f, 1.f));
@@ -693,6 +708,8 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
 
     glBindVertexArray(gs->VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    ////////// GemStone 9 //////////
 
     glm::mat4 rock8_mat = glm::mat4(1.0f);
     rock8_mat = glm::translate(rock8_mat, glm::vec3(m_ReceivedData[8].fX, m_ReceivedData[8].fY, m_ReceivedData[8].fZ));
