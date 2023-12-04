@@ -107,29 +107,28 @@ void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 	}
 }
 
-void SendToMove(SOCK_INFO* sock_info, char input){
+void SendToMove(SOCK_INFO* sock_info, char input, bool KeyDown){
 
 	switch (input) {
 	case 'w':
 	{
-		g_Players[sock_info->id]->transX -=  0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
-		g_Players[sock_info->id]->transZ -= 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->bFowardKeyDown = KeyDown;
 		break;
 	}
 	case 'a':
 	{
-		g_Players[sock_info->id]->rotateY += 1.f;
+		g_Players[sock_info->id]->bLeftKeyDown = KeyDown;
+		
 		break;
 	}
 	case 's':
 	{
-		g_Players[sock_info->id]->transX += 0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
-		g_Players[sock_info->id]->transZ += 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->bBackKeyDown = KeyDown;
 		break;
 	}
 	case 'd':
 	{
-		g_Players[sock_info->id]->rotateY -= 1.f;
+		g_Players[sock_info->id]->bRightKeyDown = KeyDown;
 		break;
 	}
 	}
@@ -203,7 +202,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
 			INPUT_PACKET* packet = reinterpret_cast<INPUT_PACKET*>(buf);
 			cout << "[" << sock_info->id << "]" << packet->input << endl;
-			SendToMove(sock_info, packet->input);
+			SendToMove(sock_info, packet->input, packet->bKeyDown);
 			break;
 		}
 		}
@@ -215,6 +214,23 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 	printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
 		addr, ntohs(clientaddr.sin_port));
 	return 0;
+}
+
+void UpdatePlayer(int id) {
+	if (g_Players[id]->bFowardKeyDown) {
+		g_Players[id]->transX -= 0.03f * sin(g_Players[id]->rotateY * atan(1) * 4 / 180);
+		g_Players[id]->transZ -= 0.03f * cos(g_Players[id]->rotateY * atan(1) * 4 / 180);
+	}
+	if (g_Players[id]->bBackKeyDown) {
+		g_Players[id]->transX += 0.03f * sin(g_Players[id]->rotateY * atan(1) * 4 / 180);
+		g_Players[id]->transZ += 0.03f * cos(g_Players[id]->rotateY * atan(1) * 4 / 180);
+	}
+	if (g_Players[id]->bLeftKeyDown) {
+		g_Players[id]->rotateY += 1.f;
+	}
+	if (g_Players[id]->bRightKeyDown) {
+		g_Players[id]->rotateY -= 1.f;
+	}
 }
 
 DWORD WINAPI SendClient(LPVOID arg)
@@ -231,40 +247,40 @@ DWORD WINAPI SendClient(LPVOID arg)
 
 	while (1) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
-			if (ClientList.size() == 3) {
+		if (ClientList.size() == 3) {
 
-				for (const auto& client : ClientList) {
-					SEND_PLAYER* packet_sendP = new SEND_PLAYER;
-					packet_sendP->type = SC_SEND_PLAYER;
-					packet_sendP->id = sock_info->id;
-					MOVE_PACKET* packet_tr = new MOVE_PACKET;
-					//ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
+			lock_guard<mutex> lock(clientListMutex);
+			UpdatePlayer(sock_info->id);
+			for (const auto& client : ClientList) {
 
-					packet_tr->type = SC_PLAYER_MOVE;
-					//packet_ro->type = SC_PLAYER_ROTATE;
-					packet_tr->fx = g_Players[sock_info->id]->transX;
-					packet_tr->fy = g_Players[sock_info->id]->transY;
-					packet_tr->fz = g_Players[sock_info->id]->transZ;
-					packet_tr->fro = g_Players[sock_info->id]->rotateY;
-					//packet_ro->fy = g_Players[sock_info->id]->rotateY;
-					cout << sock_info->id << " " << packet_tr->fz << endl;
-					lock_guard<mutex> lock(clientListMutex);
-					send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
-					send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+				SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+				packet_sendP->type = SC_SEND_PLAYER;
+				packet_sendP->id = sock_info->id;
 
-					//send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
-					delete packet_sendP;
-					delete packet_tr;
-					//delete packet_ro;
-				}
+				MOVE_PACKET* packet_tr = new MOVE_PACKET;
+				packet_tr->type = SC_PLAYER_MOVE;
+				packet_tr->fx = g_Players[sock_info->id]->transX;
+				packet_tr->fy = g_Players[sock_info->id]->transY;
+				packet_tr->fz = g_Players[sock_info->id]->transZ;
+				packet_tr->fro = g_Players[sock_info->id]->rotateY;
+
+
+				send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+				send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+
+				cout << sock_info->id << " " << packet_tr->fz << endl;
+				
+				delete packet_sendP;
+				delete packet_tr;
 			}
+		}
 
 	}
-		// 소켓 닫기
-		closesocket(client_sock);
-		printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
-			addr, ntohs(clientaddr.sin_port));
-		return 0;
+	// 소켓 닫기
+	closesocket(client_sock);
+	printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
+		addr, ntohs(clientaddr.sin_port));
+	return 0;
 }
 
 int main(int argc, char* argv[])

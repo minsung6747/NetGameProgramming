@@ -428,21 +428,35 @@ void drawScene()
 //	
 //}
 GLvoid KeyBoardUp(unsigned char key, int x, int y) {
+	INPUT_PACKET* packet = new INPUT_PACKET;
 	switch (key)
 	{
 	case 'a':
-		left_key = false;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 'a';
+		packet->bKeyDown = false;
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	case 'd':
-		right_key = false;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 'd';
+		packet->bKeyDown = false;
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	case 'w':
-		//up_key = false;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 'w';
+		packet->bKeyDown = false;
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	case 's':
-		//down_key = false;
+		packet->type = SC_KEY_INPUT;
+		packet->input = 's';
+		packet->bKeyDown = false;
+		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
+	delete packet;
 	glutPostRedisplay();
 }
 GLvoid KeyBoard(unsigned char key, int x, int y) {
@@ -474,6 +488,7 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
 	{
 		packet->type = SC_KEY_INPUT;
 		packet->input = 'a';
+		packet->bKeyDown = true;
 		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
@@ -481,6 +496,7 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
 	{
 		packet->type = SC_KEY_INPUT;
 		packet->input = 'd';
+		packet->bKeyDown = true;
 		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
@@ -489,6 +505,7 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
 		//up_key = true;
 		packet->type = SC_KEY_INPUT;
 		packet->input = 'w';
+		packet->bKeyDown = true;
 		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}
@@ -496,6 +513,7 @@ GLvoid KeyBoard(unsigned char key, int x, int y) {
 	{
 		packet->type = SC_KEY_INPUT;
 		packet->input = 's';
+		packet->bKeyDown = true;
 		send(sock, reinterpret_cast<char*>(packet), sizeof(INPUT_PACKET), 0);
 		break;
 	}

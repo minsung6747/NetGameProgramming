@@ -19,6 +19,7 @@ struct MOVE_PACKET {
 
 struct INPUT_PACKET {
 	char type;
+	bool bKeyDown;
 	char input;
 };
 
