@@ -38,8 +38,8 @@ vector<Player*> g_Players;
 random_device rd;
 mt19937 gen{ rd() };
 uniform_int_distribution<int> uid{ 0,2000 };
-uniform_int_distribution<int> uid_fY{ 20,70 };
-uniform_int_distribution<int> uid_fY_Aoc{ 1,2 };
+//uniform_int_distribution<int> uid_fY{ 20,70 };
+//uniform_int_distribution<int> uid_fY_Aoc{ 1,2 };
 
 float fGemStoneX[9];
 float fGemStoneZ[9];
@@ -53,6 +53,10 @@ void BombSetting()
 {
 	for (int i = 0; i < 50; ++i)
 	{
+		uniform_int_distribution<int> uid_fY{ 20,70 };
+		uniform_int_distribution<int> uid{ 0,2000 };
+		uniform_int_distribution<int> uid_fY_Aoc{ 1,2 };
+
 		fBombX[i] = uid(gen) / 100.;
 		fBombZ[i] = uid(gen) / 100.;
 		fBombMaxY[i] = uid_fY(gen) / 10.;

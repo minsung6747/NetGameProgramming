@@ -99,8 +99,12 @@ public:
 
     GLvoid Reset();
 
-    GLvoid Bomb_Mat(GameShader* gs);
-
+    GLvoid Bomb_Mat(GameShader* gs, float fX[50], float fY[50], float fZ[50], float fMaxY[50], float fAocY[50]);
+    struct BombData {
+        float m_fX, m_fY, m_fZ;
+        float m_fMaxY;
+        float m_fAocY;
+    };
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////

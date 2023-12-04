@@ -27,6 +27,12 @@ GemStonePacket receivedGemStonePacket[9];
 BombPacket receivedBombPacket[50];
 float fGemstoneX[9], fGemstoneY[9], fGemstoneZ[9];
 
+float fBombX[50];
+float fBombY[50];
+float fBombZ[50];
+float fBombMaxY[50];
+float fBombAocY[50];
+
 random_device rd;
 mt19937 gen{ rd() };
 
@@ -400,11 +406,13 @@ void drawScene()
 
 		}
 		//»ó¹Î
+		
 		wp_Bubble->Bubble_Mat(gs);
 		bg->Background_Mat(gs);
 		wp_Gemstone->Ore_Mat(gs, fGemstoneX, fGemstoneY, fGemstoneZ);
-		wp_Bomb->Bomb_Mat(gs);
+		wp_Bomb->Bomb_Mat(gs, fBombX,fBombY,fBombZ,fBombMaxY,fBombAocY);
 		bg->Warehouse_Mat(gs);
+
 		//ÀºÇü
 		for (int i = 0;i < 3;++i) {
 			Draw_SubMarine(i);
@@ -634,17 +642,34 @@ void SendPlayerPosition() {
 void ReceiveGemStonePacket(SOCKET serverSocket) {
     for (int i = 0; i < 9; ++i)
     {
-        int bytesReceived=0;
+        int ibytesReceived=0;
         recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
 		fGemstoneX[i] = receivedGemStonePacket[i].fX;
 		fGemstoneY[i] = receivedGemStonePacket[i].fY;
 		fGemstoneZ[i] = receivedGemStonePacket[i].fZ;
-        if (bytesReceived == SOCKET_ERROR) {
+        if (ibytesReceived == SOCKET_ERROR) {
             err_display("recv()");
             return;
         }
     }
 
+}
+void ReceiveBombPacket(SOCKET serverSocket) {
+	for (int i = 0; i < 50; ++i)
+	{
+		int ibytesReceived = 0;
+		recv(serverSocket, reinterpret_cast<char*>(&receivedBombPacket[i]), sizeof(receivedBombPacket[0]), 0);
+		fBombX[i] = receivedBombPacket[i].fX;
+		fBombZ[i] = receivedBombPacket[i].fZ;
+		fBombMaxY[i] = receivedBombPacket[i].fMaxY;
+		fBombY[i] = receivedBombPacket[i].fY;
+		fBombAocY[i] = receivedBombPacket[i].fAocY;
+		
+		if (ibytesReceived == SOCKET_ERROR) {
+			err_display("recv()");
+			return;
+		}
+	}
 }
 
 void SendNameToServer(SOCKET clientSocket) {
@@ -761,7 +786,7 @@ int main(int argc, char* argv[])
 		else { CloseHandle(hThread); }
 	}
 	ReceiveGemStonePacket(sock);
-
+	ReceiveBombPacket(sock);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);

@@ -587,22 +587,34 @@ GLvoid Bomb::Reset()
     bomb = NULL;
 }
 
-GLvoid Bomb::Bomb_Mat(GameShader* gs)
+GLvoid Bomb::Bomb_Mat(GameShader* gs ,float fX[50], float fY[50], float fZ[50],float fMaxY[50],float fAocY[50])
 {
-    SetPosition();
+
+    BombData m_BombReceivedData[50];
+
+    for (int i = 0; i < 50; ++i)
+    {
+        m_BombReceivedData[i].m_fX = fX[i];
+        m_BombReceivedData[i].m_fZ = fZ[i];
+        m_BombReceivedData[i].m_fMaxY = fMaxY[i];
+        m_BombReceivedData[i].m_fY = fY[i];
+        m_BombReceivedData[i].m_fAocY = fAocY[i];
+
+    }
+    //SetPosition();
     glm::mat4 bomb_mat = glm::mat4(1.0f);
     glm::mat4 line_mat = glm::mat4(1.0f);
     for (int i = 0; i < 50; ++i) {
-        if (bomb[i].transY > bomb[i].MaxTransY) {
+        if (m_BombReceivedData[i].m_fY > m_BombReceivedData[i].m_fMaxY) {
             mp_IsUp[i] = false;
         }
-        else if (bomb[i].transY < bomb[i].MaxTransY / 2.) {
+        else if (m_BombReceivedData[i].m_fY < m_BombReceivedData[i].m_fMaxY / 2.) {
             mp_IsUp[i] = true;
         }
-        if (mp_IsUp[i]) bomb[i].transY += bomb[i].transY_aoc;
-        else bomb[i].transY = bomb[i].transY - bomb[i].transY_aoc;
+        if (mp_IsUp[i]) m_BombReceivedData[i].m_fY += m_BombReceivedData[i].m_fAocY;
+        else  m_BombReceivedData[i].m_fY = m_BombReceivedData[i].m_fY - m_BombReceivedData[i].m_fAocY;
         bomb_mat = glm::mat4(1.0f);
-        bomb_mat = glm::translate(bomb_mat, glm::vec3(bomb[i].transX, bomb[i].transY, bomb[i].transZ));
+        bomb_mat = glm::translate(bomb_mat, glm::vec3(m_BombReceivedData[i].m_fY, m_BombReceivedData[i].m_fY, m_BombReceivedData[i].m_fZ));
         bomb_mat = glm::scale(bomb_mat, glm::vec3(6.0f, 6.0f, 6.0f));
         unsigned int StransformLocation = glGetUniformLocation(gs->s_program, "transform");
         glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(bomb_mat));
@@ -613,14 +625,14 @@ GLvoid Bomb::Bomb_Mat(GameShader* gs)
         glUniform1f(isCheck, false);
         glUniform4f(objColorLocation, 0.1f, 0.1f, 0.1f, 1.0);
         gluSphere(gs->qobj, 0.1f, 24, 24);
-        for (int j = 0; j < bomb[i].transY * 4; ++j) {
+        for (int j = 0; j < m_BombReceivedData[i].m_fY * 4; ++j) {
             GLfloat a{};
             if (j & 1) {
                 a = 90.f;
             }
             bomb_mat = glm::mat4(1.0f);
 
-            bomb_mat = glm::translate(bomb_mat, glm::vec3(bomb[i].transX, bomb[i].transY - j * 0.3f, bomb[i].transZ));
+            bomb_mat = glm::translate(bomb_mat, glm::vec3(m_BombReceivedData[i].m_fX, m_BombReceivedData[i].m_fY - j * 0.3f, m_BombReceivedData[i].m_fZ));
             bomb_mat = glm::rotate(bomb_mat, glm::radians(a), glm::vec3(0.0f, 1.0f, 0.0f));
             bomb_mat = glm::scale(bomb_mat, glm::vec3(0.5f, 5.0f, 0.5f));
             StransformLocation = glGetUniformLocation(gs->s_program, "transform");
