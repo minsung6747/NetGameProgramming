@@ -120,10 +120,10 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     std::uniform_int_distribution<int> rndcolor(1, 3);
 
     ////////// GemStone 1 //////////
-    
+   
     //SetPosition();
     glm::mat4 rock_mat = glm::mat4(1.0f);
-    /*if(!ore[1].put&& !ore[1].get)*/rock_mat = glm::translate(rock_mat, glm::vec3(m_ReceivedData[0].fX , m_ReceivedData[0].fY, m_ReceivedData[0].fZ));
+    rock_mat = glm::translate(rock_mat, glm::vec3(m_ReceivedData[0].fX , m_ReceivedData[0].fY, m_ReceivedData[0].fZ));
     rock_mat = glm::scale(rock_mat, glm::vec3(1.f, 5.f, 1.f));
     rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(1.0f, .0f, 0.0f));
     rock_mat = glm::rotate(rock_mat, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -204,8 +204,6 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glm::mat4 rock1_mat = glm::mat4(1.0f);
     rock1_mat = glm::translate(rock1_mat, glm::vec3(m_ReceivedData[1].fX, m_ReceivedData[1].fY, m_ReceivedData[1].fZ));
     rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 5.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(37.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(26.f), glm::vec3(0.0f, 0.0f, 1.0f));
     rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
     StransformLocation = glGetUniformLocation(gs->s_program, "transform");
     glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
@@ -214,7 +212,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (!bGemStoneColorInit) {
         while (1) {
@@ -235,8 +233,6 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     rock1_mat = glm::translate(rock1_mat, glm::vec3(m_ReceivedData[1].fX, m_ReceivedData[1].fY, m_ReceivedData[1].fZ));
     rock1_mat = glm::rotate(rock1_mat, glm::radians(15.f), glm::vec3(0.0f, 0.0f, 1.0f));
     rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(30.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(23.f), glm::vec3(0.0f, 0.0f, 1.0f));
     rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
     StransformLocation = glGetUniformLocation(gs->s_program, "transform");
     glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
@@ -245,7 +241,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (iRndColorValue[1] == 1) glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0); // y
     else if (iRndColorValue[1] == 2) glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0); // r
@@ -258,8 +254,6 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     rock1_mat = glm::translate(rock1_mat, glm::vec3(m_ReceivedData[1].fX, m_ReceivedData[1].fY, m_ReceivedData[1].fZ));
     rock1_mat = glm::rotate(rock1_mat, glm::radians(-30.f), glm::vec3(0.0f, 0.0f, 1.0f));
     rock1_mat = glm::scale(rock1_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(34.f), glm::vec3(1.0f, .0f, 0.0f));
-    rock1_mat = glm::rotate(rock1_mat, glm::radians(25.f), glm::vec3(0.0f, 0.0f, 1.0f));
     rock1_mat = glm::translate(rock1_mat, glm::vec3(0.0f, 0.1f, 0.0f));
     StransformLocation = glGetUniformLocation(gs->s_program, "transform");
     glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock1_mat));
@@ -401,10 +395,10 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     rock3_mat = glm::mat4(1.0f);
-    rock3_mat = glm::translate(rock2_mat, glm::vec3(m_ReceivedData[3].fX, m_ReceivedData[3].fY, m_ReceivedData[3].fZ));
-    rock3_mat = glm::rotate(rock2_mat, glm::radians(-30.f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rock3_mat = glm::scale(rock2_mat, glm::vec3(1.f, 3.f, 1.f));
-    rock3_mat = glm::translate(rock2_mat, glm::vec3(0.0f, 0.1f, 0.0f));
+    rock3_mat = glm::translate(rock3_mat, glm::vec3(m_ReceivedData[3].fX, m_ReceivedData[3].fY, m_ReceivedData[3].fZ));
+    rock3_mat = glm::rotate(rock3_mat, glm::radians(-30.f), glm::vec3(0.0f, 0.0f, 1.0f));
+    rock3_mat = glm::scale(rock3_mat, glm::vec3(1.f, 3.f, 1.f));
+    rock3_mat = glm::translate(rock3_mat, glm::vec3(0.0f, 0.1f, 0.0f));
     StransformLocation = glGetUniformLocation(gs->s_program, "transform");
     glUniformMatrix4fv(StransformLocation, 1, GL_FALSE, glm::value_ptr(rock3_mat));
     gs->qobj = gluNewQuadric();
@@ -650,7 +644,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (!bGemStoneColorInit) {
         while (1) {
@@ -679,7 +673,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (iRndColorValue[7] == 1) glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0); // y
     else if (iRndColorValue[7] == 2) glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0); // r
@@ -722,7 +716,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (!bGemStoneColorInit) {
         while (1) {
@@ -751,7 +745,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (iRndColorValue[8] == 1) glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0); // y
     else if (iRndColorValue[8] == 2) glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0); // r
@@ -772,7 +766,7 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     objColorLocation = glGetUniformLocation(gs->s_program, "objectColor");
     isCheck = glGetUniformLocation(gs->s_program, "isCheck");
     glUniform1f(isCheck, false);
-    
+
     // GemStone Color Setting
     if (iRndColorValue[8] == 1) glUniform4f(objColorLocation, 0.8f, 0.7f, 0.0f, 1.0); // y
     else if (iRndColorValue[8] == 2) glUniform4f(objColorLocation, 0.9f, 0.2f, 0.4f, 1.0); // r
@@ -784,6 +778,13 @@ GLvoid Gemstone::Ore_Mat(GameShader* gs, float fX[9], float fY[9], float fZ[9])
     // Show GemStone's each color created count
     if (!bGemStoneColorInit) {
         printf("젬스톤 그리기 완료 : (Y : %d개 / R : %d개 / B : %d개)\n", icoloryamount, icolorramount, icolorbamount);
+
+        for (int i = 0; i < 9; i++)
+        {
+            printf("[%d]번째 GemStone x, z 좌표 : [%.2f, %.2f] (색상 : %d)\n",
+                i, m_ReceivedData[i].fX, m_ReceivedData[i].fZ, iRndColorValue[i]);
+        }
+
         bGemStoneColorInit = true;
     }
 }

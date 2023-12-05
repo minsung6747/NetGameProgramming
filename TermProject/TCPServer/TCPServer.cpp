@@ -13,8 +13,6 @@
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
-
-
 struct ClientInfo {
 	SOCKET socket;
 	bool BIsLoggedIn;
@@ -47,7 +45,13 @@ void iRandomSetting()
 	{
 		bool bOverlap = false; // 다른 젬스톤과 겹치는지 여부
 		bool bCenterpos = false; // 가운데에 있는지 여부
-		const float overlapSize = 1.5f; // 겹침 판정 크기 (임시)
+		bool bMapOutside = false; // 맵 밖에 있는지 여부
+
+		const float OVERLAPSIZE = 2.f; // 겹침 판정 크기 (임시)
+		const float CENTERSIZE = 2.f; // 가운데 판정 크기 (임시)
+
+		float fxPosFromCenter = 0.f; // 가운데에서 떨어진 x 거리
+		float fzPosFromCenter = 0.f; // 가운데에서 떨어진 z 거리
 
 		// 좌표 지정
 		fTransX[i] = uid(gen) / 100;
@@ -55,41 +59,54 @@ void iRandomSetting()
 
 		while (1) {
 
-			// 가운데로부터 거리
-			float fLengthFromCenter = sqrt(fTransX[i] * fTransX[i] + fTransZ[i] * fTransZ[i]);
+			fxPosFromCenter = 10.f - fTransX[i]; // 가운데에서 떨어진 x 거리
+			fzPosFromCenter = 10.f - fTransZ[i]; // 가운데에서 떨어진 z 거리
 
-			// 원기둥 범위를 넘어가는 경우
-			if (fLengthFromCenter >= 15.f) {
-				// 해당 비율만큼 나눠 안으로 넣는다
-				fTransX[i] *= (15.f / fLengthFromCenter);
-				fTransZ[i] *= (15.f / fLengthFromCenter);
-			}
-			
 			bOverlap = false; // 다른 젬스톤과 겹치는지 여부
 			bCenterpos = false; // 가운데에 있는지 여부
+			bMapOutside = false; // 맵 밖에 있는지 여부
+
+			// 가운데로부터 거리
+			float fLengthFromCenter = sqrt(fxPosFromCenter * fxPosFromCenter + fzPosFromCenter * fzPosFromCenter);
+
+			// 원기둥 범위를 넘어가는 경우
+			if (fLengthFromCenter >= 7.f) {
+				// 맵 밖에 있음
+				bMapOutside = true; 
+			}
 
 			// 이전 젬스톤 좌표들과 겹치는지를 판정
 			for (int j = 0; j < i; j++) {
-				if ((fTransX[i] <= fTransX[j] + overlapSize)
-					&& (fTransX[i] >= fTransX[j] - overlapSize)
-					&& (fTransZ[i] <= fTransZ[j] + overlapSize)
-					&& (fTransZ[i] >= fTransZ[j] - overlapSize))
+				if ((fTransX[i] <= fTransX[j] + OVERLAPSIZE)
+					&& (fTransX[i] >= fTransX[j] - OVERLAPSIZE)
+					&& (fTransZ[i] <= fTransZ[j] + OVERLAPSIZE)
+					&& (fTransZ[i] >= fTransZ[j] - OVERLAPSIZE))
 				{
 					bOverlap = true;
 				}
 			}
 
 			// 가운데에 있는지 여부
-			if ((fTransX[i] <= 3.f)
-				&& (fTransX[i] >= -3.f)
-				&& (fTransZ[i] <= 3.f)
-				&& (fTransZ[i] >= -3.f))
+			if ((fTransX[i] <= 10.f + CENTERSIZE)
+				&& (fTransX[i] >= 10.f - CENTERSIZE)
+				&& (fTransZ[i] <= 10.f + CENTERSIZE)
+				&& (fTransZ[i] >= 10.f - CENTERSIZE))
 			{
 				bCenterpos = true;
 			}
-			
-			// 겹치지 않고 가운데에 있지 않는다면 루프에서 나온다
-			if (!bOverlap && !bCenterpos) break;
+
+			// 겹치지 않고 가운데에 있지 않고 맵 밖에 있지 않는다면 루프에서 나온다
+			if (!bOverlap && !bCenterpos && !bMapOutside) {
+
+				printf("[%d]번째 GemStone x, z 좌표 : [%.2f, %.2f] ",
+					i, fTransX[i], fTransZ[i]);
+
+				fxPosFromCenter = 10.f - fTransX[i]; // 가운데에서 떨어진 x 거리
+				fzPosFromCenter = 10.f - fTransZ[i]; // 가운데에서 떨어진 z 거리
+				printf("(원점으로부터 거리 : %.2f)\n", sqrt(fxPosFromCenter * fxPosFromCenter + fzPosFromCenter * fzPosFromCenter));
+
+				break;
+			}
 
 			// 겹친다면 좌표를 재지정하고 루프를 재실행한다
 			else {
@@ -98,27 +115,23 @@ void iRandomSetting()
 				fTransZ[i] = uid(gen) / 100;
 			}
 		}
-
-		printf("[%d]번째 GemStone x, z 좌표 : [%.2f, %.2f]\n", i, fTransX[i], fTransZ[i]);
 	}
 }
 
-void SendGemStonePacket(SOCKET clientSocket) 
+void SendGemStonePacket(SOCKET clientSocket)
 {
-		
-		GemStonePacket GemStonePacket[9];
-	
-			for (int i = 0; i < 9; i++) {
 
-				
-				GemStonePacket[i].fX = fTransX[i];
-				GemStonePacket[i].fY = 0;             //그냥 초기화
-				GemStonePacket[i].fZ = fTransZ[i];
-				GemStonePacket->cType = PACKET_GEMSTONE;
+	GemStonePacket GemStonePacket[9];
 
-				// 데이터를 클라이언트에게 보냄
-				send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
-			}
+	for (int i = 0; i < 9; i++) {
+		GemStonePacket[i].fX = fTransX[i];
+		GemStonePacket[i].fY = 0;             //그냥 초기화
+		GemStonePacket[i].fZ = fTransZ[i];
+		GemStonePacket->cType = PACKET_GEMSTONE;
+
+		// 데이터를 클라이언트에게 보냄
+		send(clientSocket, reinterpret_cast<char*>(&GemStonePacket[i]), sizeof(GemStonePacket[0]), 0);
+	}
 }
 
 void StartGame() {
@@ -132,7 +145,7 @@ void StartGame() {
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
 		SendGemStonePacket(client.socket);
 	}
-	
+
 
 }
 
@@ -158,12 +171,12 @@ void HandleLogin(SOCK_INFO* clientSocket, const string& clientName) {
 	}
 }
 
-void SendToMove(SOCK_INFO* sock_info, char input){
+void SendToMove(SOCK_INFO* sock_info, char input) {
 
 	switch (input) {
 	case 'w':
 	{
-		g_Players[sock_info->id]->transX -=  0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
+		g_Players[sock_info->id]->transX -= 0.03f * sin(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
 		g_Players[sock_info->id]->transZ -= 0.03f * cos(g_Players[sock_info->id]->rotateY * atan(1) * 4 / 180);
 		break;
 	}
@@ -185,11 +198,11 @@ void SendToMove(SOCK_INFO* sock_info, char input){
 	}
 	}
 	for (const auto& client : ClientList) {
-	SEND_PLAYER* packet_sendP = new SEND_PLAYER;
-	packet_sendP->type = SC_SEND_PLAYER;
-	packet_sendP->id = sock_info->id;
-	send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
-	delete packet_sendP;
+		SEND_PLAYER* packet_sendP = new SEND_PLAYER;
+		packet_sendP->type = SC_SEND_PLAYER;
+		packet_sendP->id = sock_info->id;
+		send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
+		delete packet_sendP;
 		MOVE_PACKET* packet_tr = new MOVE_PACKET;
 		ROTATE_PACKET* packet_ro = new ROTATE_PACKET;
 
@@ -200,11 +213,11 @@ void SendToMove(SOCK_INFO* sock_info, char input){
 		packet_tr->fz = g_Players[sock_info->id]->transZ;
 		packet_ro->fy = g_Players[sock_info->id]->rotateY;
 		cout << sock_info->id << " " << packet_tr->fz << endl;
-			send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
-			send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
+		send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
+		send(client.socket, reinterpret_cast<char*>(packet_ro), sizeof(ROTATE_PACKET), 0);
 		delete packet_tr;
 		delete packet_ro;
-		}
+	}
 
 
 }
@@ -253,6 +266,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
 			INPUT_PACKET* packet = reinterpret_cast<INPUT_PACKET*>(buf);
 			cout << "[" << sock_info->id << "]" << packet->input << endl;
+			cout << "x, z 좌표 위치 : " << g_Players[sock_info->id]->transX << ", " << g_Players[sock_info->id]->transZ << endl;
 			SendToMove(sock_info, packet->input);
 			break;
 		}
