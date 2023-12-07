@@ -131,6 +131,7 @@ void SendGemStonePacket(SOCKET clientSocket)
 				GemStonePacket[i].fX = fTransX[i];
 				GemStonePacket[i].fY = 0;             //그냥 초기화
 				GemStonePacket[i].fZ = fTransZ[i];
+				GemStonePacket[i].num = i;
 				GemStonePacket->cType = PACKET_GEMSTONE;
 
 				// 데이터를 클라이언트에게 보냄
@@ -147,7 +148,7 @@ void StartGame() {
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
-		//SendGemStonePacket(client.socket);
+		SendGemStonePacket(client.socket);
 	}
 	
 

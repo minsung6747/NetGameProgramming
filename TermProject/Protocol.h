@@ -36,5 +36,6 @@ struct SEND_PLAYER {
 
 struct GemStonePacket {
 	char cType;
+	int num;
 	float fX, fY, fZ;
 };

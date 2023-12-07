@@ -648,19 +648,29 @@ void SendPlayerPosition() {
     //}
 }
 
+void ReceiveGemStonePacket(SOCKET serverSocket, char buf[BUFSIZE+1]) {
+
+	GemStonePacket* gemstonePacket = reinterpret_cast<GemStonePacket*>(buf);
+	for (int i = 0;i < 9;++i) {
+		fGemstoneX[gemstonePacket[i].num] = gemstonePacket[i].fX;
+		fGemstoneY[gemstonePacket[i].num] = gemstonePacket[i].fY;
+		fGemstoneZ[gemstonePacket[i].num] = gemstonePacket[i].fZ;
+	}
+}
+
 void ReceiveGemStonePacket(SOCKET serverSocket) {
-    for (int i = 0; i < 9; ++i)
-    {
-        int bytesReceived=0;
-        recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
+	for (int i = 0; i < 9; ++i)
+	{
+		int bytesReceived = 0;
+		recv(serverSocket, reinterpret_cast<char*>(&receivedGemStonePacket[i]), sizeof(receivedGemStonePacket[0]), 0);
 		fGemstoneX[i] = receivedGemStonePacket[i].fX;
 		fGemstoneY[i] = receivedGemStonePacket[i].fY;
 		fGemstoneZ[i] = receivedGemStonePacket[i].fZ;
-        if (bytesReceived == SOCKET_ERROR) {
-            err_display("recv()");
-            return;
-        }
-    }
+		if (bytesReceived == SOCKET_ERROR) {
+			err_display("recv()");
+			return;
+		}
+	}
 
 }
 
@@ -721,7 +731,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		}
 		case PACKET_GEMSTONE:
 		{
-			ReceiveGemStonePacket(sock_info->server_sock);
+			ReceiveGemStonePacket(sock_info->server_sock,buf);
 		}
 		}
 		//}
@@ -782,7 +792,7 @@ int main(int argc, char* argv[])
 			reinterpret_cast<LPVOID*>(sock_info->GetSockInfo()), 0, NULL);
 		if (hThread == NULL) { closesocket(sock); }
 		else { CloseHandle(hThread); }
-		//ReceiveGemStonePacket(sock);
+		ReceiveGemStonePacket(sock);
 	}
 
 	glutInit(&argc, argv);
