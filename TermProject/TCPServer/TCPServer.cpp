@@ -40,6 +40,8 @@ random_device rd;
 mt19937 gen{ rd() };
 uniform_int_distribution<int> uid{ 0,2000 };
 
+int End{ -1 };
+
 float fTransX[9];
 float fTransY[9];
 float fTransZ[9];
@@ -262,7 +264,7 @@ void UpdatePlayer() {
 		if (g_Players[id]->bCatched == -1) {
 			for (int i = 0;i < 9;++i) {
 				flag = Collision(g_Players[id]->transX, g_Players[id]->transY, g_Players[id]->transZ,
-					fTransX[i], 0, fTransZ[i],0.5f);
+					fTransX[i], 0.f, fTransZ[i], 0.5f);
 				if (flag) {
 					g_Players[id]->bCatched = i;
 				}
@@ -303,6 +305,9 @@ void UpdatePlayer() {
 				g_Players[id]->bCatched = -1;
 				++g_Players[id]->iPoint;
 				cout << ClientList[id].sName << " - " << g_Players[id]->iPoint << endl;
+				if (g_Players[id]->iPoint == 3) {
+					End = id;
+			}
 			}
 			fTransX[g_Players[id]->bCatched] = g_Players[id]->transX;
 			fTransY[g_Players[id]->bCatched] = g_Players[id]->transY + 0.2f;
@@ -360,6 +365,11 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		// 데이터 보내기
 		if (ClientList.size() == 3) {
 			UpdatePlayer();
+			if (End != -1) {
+				cout << ClientList[End].sName << "플레이어의 승리!!" << endl;
+				closesocket(client_sock);
+				return 0;
+			}
 			for (const auto& client : ClientList) {
 
 				SEND_PLAYER* packet_sendP = new SEND_PLAYER;
