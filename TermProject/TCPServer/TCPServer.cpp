@@ -44,10 +44,80 @@ float fTransX[9];
 float fTransZ[9];
 void iRandomSetting()
 {
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < 9; i++)
 	{
+		bool bOverlap = false; // 다른 젬스톤과 겹치는지 여부
+		bool bCenterpos = false; // 가운데에 있는지 여부
+		bool bMapOutside = false; // 맵 밖에 있는지 여부
+
+		const float OVERLAPSIZE = 2.f; // 겹침 판정 크기 (임시)
+		const float CENTERSIZE = 2.f; // 가운데 판정 크기 (임시)
+
+		float fxPosFromCenter = 0.f; // 가운데에서 떨어진 x 거리
+		float fzPosFromCenter = 0.f; // 가운데에서 떨어진 z 거리
+
+		// 좌표 지정
 		fTransX[i] = uid(gen) / 100;
 		fTransZ[i] = uid(gen) / 100;
+
+		while (1) {
+
+			fxPosFromCenter = 10.f - fTransX[i]; // 가운데에서 떨어진 x 거리
+			fzPosFromCenter = 10.f - fTransZ[i]; // 가운데에서 떨어진 z 거리
+
+			bOverlap = false; // 다른 젬스톤과 겹치는지 여부
+			bCenterpos = false; // 가운데에 있는지 여부
+			bMapOutside = false; // 맵 밖에 있는지 여부
+
+			// 가운데로부터 거리
+			float fLengthFromCenter = sqrt(fxPosFromCenter * fxPosFromCenter + fzPosFromCenter * fzPosFromCenter);
+
+			// 원기둥 범위를 넘어가는 경우
+			if (fLengthFromCenter >= 7.f) {
+				// 맵 밖에 있음
+				bMapOutside = true;
+			}
+
+			// 이전 젬스톤 좌표들과 겹치는지를 판정
+			for (int j = 0; j < i; j++) {
+				if ((fTransX[i] <= fTransX[j] + OVERLAPSIZE)
+					&& (fTransX[i] >= fTransX[j] - OVERLAPSIZE)
+					&& (fTransZ[i] <= fTransZ[j] + OVERLAPSIZE)
+					&& (fTransZ[i] >= fTransZ[j] - OVERLAPSIZE))
+				{
+					bOverlap = true;
+				}
+			}
+
+			// 가운데에 있는지 여부
+			if ((fTransX[i] <= 10.f + CENTERSIZE)
+				&& (fTransX[i] >= 10.f - CENTERSIZE)
+				&& (fTransZ[i] <= 10.f + CENTERSIZE)
+				&& (fTransZ[i] >= 10.f - CENTERSIZE))
+			{
+				bCenterpos = true;
+			}
+
+			// 겹치지 않고 가운데에 있지 않고 맵 밖에 있지 않는다면 루프에서 나온다
+			if (!bOverlap && !bCenterpos && !bMapOutside) {
+
+				printf("[%d]번째 GemStone x, z 좌표 : [%.2f, %.2f] ",
+					i, fTransX[i], fTransZ[i]);
+
+				fxPosFromCenter = 10.f - fTransX[i]; // 가운데에서 떨어진 x 거리
+				fzPosFromCenter = 10.f - fTransZ[i]; // 가운데에서 떨어진 z 거리
+				printf("(원점으로부터 거리 : %.2f)\n", sqrt(fxPosFromCenter * fxPosFromCenter + fzPosFromCenter * fzPosFromCenter));
+
+				break;
+			}
+
+			// 겹친다면 좌표를 재지정하고 루프를 재실행한다
+			else {
+				// 좌표 재지정
+				fTransX[i] = uid(gen) / 100;
+				fTransZ[i] = uid(gen) / 100;
+			}
+		}
 	}
 }
 void SendGemStonePacket(SOCKET clientSocket) 
