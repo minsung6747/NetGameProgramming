@@ -411,7 +411,7 @@ void drawScene()
 		subMarine_collison();
 		subMarine_Catch();
 	}
-	glutSwapBuffers();
+		glutSwapBuffers();
 }
 //        //»ó¹Î
 //        wp_Bubble->Bubble_Mat(gs);
@@ -778,8 +778,8 @@ int main(int argc, char* argv[])
 			reinterpret_cast<LPVOID*>(sock_info->GetSockInfo()), 0, NULL);
 		if (hThread == NULL) { closesocket(sock); }
 		else { CloseHandle(hThread); }
+		ReceiveGemStonePacket(sock);
 	}
-	ReceiveGemStonePacket(sock);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
