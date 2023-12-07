@@ -719,6 +719,10 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 			//std::cout << packet_ro->fy << endl;
 			break;
 		}
+		case PACKET_GEMSTONE:
+		{
+			ReceiveGemStonePacket(sock_info->server_sock);
+		}
 		}
 		//}
 	}
@@ -778,7 +782,7 @@ int main(int argc, char* argv[])
 			reinterpret_cast<LPVOID*>(sock_info->GetSockInfo()), 0, NULL);
 		if (hThread == NULL) { closesocket(sock); }
 		else { CloseHandle(hThread); }
-		ReceiveGemStonePacket(sock);
+		//ReceiveGemStonePacket(sock);
 	}
 
 	glutInit(&argc, argv);

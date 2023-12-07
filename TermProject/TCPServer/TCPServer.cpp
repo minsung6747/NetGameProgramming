@@ -147,7 +147,7 @@ void StartGame() {
 	for (const auto& client : ClientList) {
 		send(client.socket, (char*)"START", 5, 0);
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
-		SendGemStonePacket(client.socket);
+		//SendGemStonePacket(client.socket);
 	}
 	
 
@@ -299,6 +299,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 				send(client.socket, reinterpret_cast<char*>(packet_sendP), sizeof(SEND_PLAYER), 0);
 				send(client.socket, reinterpret_cast<char*>(packet_tr), sizeof(MOVE_PACKET), 0);
 
+				SendGemStonePacket(client.socket);
 				//cout << sock_info->id << " " << packet_tr->fz << endl;
 				delete packet_sendP;
 				delete packet_tr;
