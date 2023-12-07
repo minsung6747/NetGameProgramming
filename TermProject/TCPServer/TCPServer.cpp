@@ -151,6 +151,11 @@ void StartGame() {
 		send(client.socket, (char*)&client.id, sizeof(int), 0);
 		SendGemStonePacket(client.socket);
 	}
+	for (int i = 0;i < 3;++i) {
+		g_Players[i]->transX = 9.f+i;
+		g_Players[i]->transY = 1.f;
+		g_Players[i]->transZ = 10.f;
+	}
 	
 
 }
@@ -230,10 +235,9 @@ void SendToMove(SOCK_INFO* sock_info, char input, bool KeyDown){
 }
 
 bool Collision(float firstX, float firstY, float firstZ,
-				float lastX, float lastY, float lastZ) 
+				float lastX, float lastY, float lastZ, float fDistance) 
 {
 	//bool flag = true;
-	float fDistance = 0.5f;
 	if (firstX + fDistance < lastX - fDistance || lastX + fDistance < firstX - fDistance)
 		return false;
 	if (firstY + fDistance < lastY - fDistance || lastY + fDistance < firstY - fDistance)
@@ -253,21 +257,58 @@ bool Collision(float firstX, float firstY, float firstZ,
 
 void UpdatePlayer() {
 	bool flag = false;
+	bool pFlag = false;
 	for (int id = 0;id < 3;++id) {
 		if (g_Players[id]->bCatched == -1) {
 			for (int i = 0;i < 9;++i) {
 				flag = Collision(g_Players[id]->transX, g_Players[id]->transY, g_Players[id]->transZ,
-					fTransX[i], 0, fTransZ[i]);
+					fTransX[i], 0, fTransZ[i],0.5f);
 				if (flag) {
 					g_Players[id]->bCatched = i;
 				}
 			}
 		}
 		else {
+			if (Collision(g_Players[id]->transX, g_Players[id]->transY, g_Players[id]->transZ,
+				10.f, 1.f, 10.f, 1.f)) {
+				switch (g_Players[id]->bCatched) {
+				case 0:
+				case 1:
+				case 2: 
+				{
+					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2* g_Players[id]->bCatched;
+					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransZ[g_Players[id]->bCatched] = 9.8f;
+					break;
+				}
+				case 3:
+				case 4:
+				case 5:
+				{
+					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2 * (g_Players[id]->bCatched - 3);
+					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransZ[g_Players[id]->bCatched] = 10.f;
+					break;
+				}
+				case 6:
+				case 7:
+				case 8:
+				{
+					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2 * (g_Players[id]->bCatched - 6);
+					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransZ[g_Players[id]->bCatched] = 10.2f;
+					break;
+				}
+				}
+				g_Players[id]->bCatched = -1;
+				++g_Players[id]->iPoint;
+				cout << ClientList[id].sName << " - " << g_Players[id]->iPoint << endl;
+			}
 			fTransX[g_Players[id]->bCatched] = g_Players[id]->transX;
 			fTransY[g_Players[id]->bCatched] = g_Players[id]->transY + 0.2f;
 			fTransZ[g_Players[id]->bCatched] = g_Players[id]->transZ;
 		}
+
 		if (g_Players[id]->bFowardKeyDown) {
 			g_Players[id]->transX -= 0.03f * sin(g_Players[id]->rotateY * atan(1) * 4 / 180);
 			g_Players[id]->transZ -= 0.03f * cos(g_Players[id]->rotateY * atan(1) * 4 / 180);
@@ -356,7 +397,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		{
 
 			INPUT_PACKET* packet = reinterpret_cast<INPUT_PACKET*>(buf);
-			cout << "[" << sock_info->id << "]" << packet->input << endl;
+			//cout << "[" << sock_info->id << "]" << packet->input << endl;
 			SendToMove(sock_info, packet->input, packet->bKeyDown);
 			break;
 		}

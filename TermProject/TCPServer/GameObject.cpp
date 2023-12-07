@@ -216,7 +216,6 @@ GLvoid Bubble::Bubbles_Setting()
 
 Player::Player()
 {
-    transX = 10.0f, transY = 1.0f, transZ = 10.0f;
 }
 
 Player::~Player()

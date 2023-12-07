@@ -588,7 +588,7 @@ void MouseChange(int x, int y) {
 
 GLvoid Setting(int id)
 {
-	subMarine[id].trans_x = 10.f;
+	subMarine[id].trans_x = 9.f+id;
 	subMarine[id].trans_y = 1.f;
 	subMarine[id].trans_z = 10.f;
 	subMarine[id].scale_z = 0.f;
