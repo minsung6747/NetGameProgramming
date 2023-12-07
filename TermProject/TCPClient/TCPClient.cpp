@@ -33,6 +33,8 @@ int g_id;
 SOCK_INFO* sock_info;
 SOCKET sock;
 
+bool End{ false };
+
 Camera CO;
 GameShader* gs = new GameShader;
 Background* bg = new Background();
@@ -596,6 +598,7 @@ GLvoid Setting(int id)
 }
 GLvoid Timer(int value)
 {
+	if (End)PostQuitMessage(0);
 	MH.first_mouse_pos_flag = true;
 
 	if (L_key == true && arm_rot <= 20.f) {
@@ -732,6 +735,16 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		case PACKET_GEMSTONE:
 		{
 			ReceiveGemStonePacket(sock_info->server_sock,buf);
+			break;
+		}
+		case SC_END:
+		{
+			EndPacket* packet = reinterpret_cast<EndPacket*>(buf);
+			cout << packet->id << "의 플레이어가 승리했습니다.";
+			closesocket(server_sock);
+			End = true;
+			return 0;
+			break;
 		}
 		}
 		//}

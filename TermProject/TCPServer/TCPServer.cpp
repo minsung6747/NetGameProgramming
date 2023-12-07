@@ -40,6 +40,11 @@ random_device rd;
 mt19937 gen{ rd() };
 uniform_int_distribution<int> uid{ 0,2000 };
 
+SOCKET listen_sock{};
+
+int End{ -1 };
+int AllEnd{};
+
 float fTransX[9];
 float fTransY[9];
 float fTransZ[9];
@@ -262,7 +267,7 @@ void UpdatePlayer() {
 		if (g_Players[id]->bCatched == -1) {
 			for (int i = 0;i < 9;++i) {
 				flag = Collision(g_Players[id]->transX, g_Players[id]->transY, g_Players[id]->transZ,
-					fTransX[i], 0, fTransZ[i],0.5f);
+					fTransX[i], fTransY[i], fTransZ[i], 0.5f);
 				if (flag) {
 					g_Players[id]->bCatched = i;
 				}
@@ -277,7 +282,7 @@ void UpdatePlayer() {
 				case 2: 
 				{
 					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2* g_Players[id]->bCatched;
-					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransY[g_Players[id]->bCatched] = -0.5f;
 					fTransZ[g_Players[id]->bCatched] = 9.8f;
 					break;
 				}
@@ -286,7 +291,7 @@ void UpdatePlayer() {
 				case 5:
 				{
 					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2 * (g_Players[id]->bCatched - 3);
-					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransY[g_Players[id]->bCatched] = -0.5f;
 					fTransZ[g_Players[id]->bCatched] = 10.f;
 					break;
 				}
@@ -295,7 +300,7 @@ void UpdatePlayer() {
 				case 8:
 				{
 					fTransX[g_Players[id]->bCatched] = 9.8f + 0.2 * (g_Players[id]->bCatched - 6);
-					fTransY[g_Players[id]->bCatched] = 0.f;
+					fTransY[g_Players[id]->bCatched] = -0.5f;
 					fTransZ[g_Players[id]->bCatched] = 10.2f;
 					break;
 				}
@@ -303,6 +308,9 @@ void UpdatePlayer() {
 				g_Players[id]->bCatched = -1;
 				++g_Players[id]->iPoint;
 				cout << ClientList[id].sName << " - " << g_Players[id]->iPoint << endl;
+				if (g_Players[id]->iPoint == 3) {
+					End = id;
+			}
 			}
 			fTransX[g_Players[id]->bCatched] = g_Players[id]->transX;
 			fTransY[g_Players[id]->bCatched] = g_Players[id]->transY + 0.2f;
@@ -360,6 +368,23 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		// 데이터 보내기
 		if (ClientList.size() == 3) {
 			UpdatePlayer();
+			if (End != -1) {
+				cout << ClientList[End].sName << "의 승리" << endl;
+				EndPacket* endPacket = new EndPacket;
+				endPacket->type = SC_END;
+				endPacket->id = ClientList[End].sName;
+				//for (const auto& client : ClientList) {
+				send(sock_info->client_sock, reinterpret_cast<char*>(endPacket), sizeof(EndPacket), 0);
+				++AllEnd;
+				closesocket(sock_info->client_sock);
+				if (AllEnd == 3) {
+					closesocket(listen_sock);
+					//WSACleanup();
+					//exit(0);
+					return 0;
+				}
+				//}
+			}
 			for (const auto& client : ClientList) {
 
 				SEND_PLAYER* packet_sendP = new SEND_PLAYER;
@@ -389,6 +414,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 		// 데이터 받기
 		retval = recv(client_sock, buf, BUFSIZE, 0);
 		if (retval == SOCKET_ERROR) {
+			cout << sock_info->id << endl;
 			err_display("recv()");
 			break;
 		}
@@ -480,7 +506,7 @@ int main(int argc, char* argv[])
 		return 1;
 
 	// 소켓 생성
-	SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+	listen_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_sock == INVALID_SOCKET) err_quit("socket()");
 
 	// bind()
@@ -509,6 +535,7 @@ int main(int argc, char* argv[])
 		// accept()
 		addrlen = sizeof(clientaddr);
 		client_sock = accept(listen_sock, (struct sockaddr*)&clientaddr, &addrlen);
+		if (listen_sock == 0)break;
 		if (client_sock == INVALID_SOCKET) {
 			err_display("accept()");
 			break;
@@ -544,7 +571,7 @@ int main(int argc, char* argv[])
 	}
 
 	// 소켓 닫기
-	closesocket(listen_sock);
+	//closesocket(listen_sock);
 
 	// 윈속 종료
 	WSACleanup();
