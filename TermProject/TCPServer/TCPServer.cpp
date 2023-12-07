@@ -41,6 +41,7 @@ mt19937 gen{ rd() };
 uniform_int_distribution<int> uid{ 0,2000 };
 
 float fTransX[9];
+float fTransY[9];
 float fTransZ[9];
 void iRandomSetting()
 {
@@ -129,7 +130,7 @@ void SendGemStonePacket(SOCKET clientSocket)
 
 				
 				GemStonePacket[i].fX = fTransX[i];
-				GemStonePacket[i].fY = 0;             //그냥 초기화
+				GemStonePacket[i].fY = fTransY[i];             //그냥 초기화
 				GemStonePacket[i].fZ = fTransZ[i];
 				GemStonePacket[i].num = i;
 				GemStonePacket->cType = PACKET_GEMSTONE;
@@ -228,9 +229,45 @@ void SendToMove(SOCK_INFO* sock_info, char input, bool KeyDown){
 
 }
 
+bool Collision(float firstX, float firstY, float firstZ,
+				float lastX, float lastY, float lastZ) 
+{
+	//bool flag = true;
+	float fDistance = 0.5f;
+	if (firstX + fDistance < lastX - fDistance || lastX + fDistance < firstX - fDistance)
+		return false;
+	if (firstY + fDistance < lastY - fDistance || lastY + fDistance < firstY - fDistance)
+		return false;
+	if (firstZ + fDistance < lastZ - fDistance || lastZ + fDistance < firstZ - fDistance)
+		return false;
+
+	/*if (firstX - fDistance > lastX + fDistance && firstX + fDistance > lastX + fDistance)
+		return false;
+	if (firstY - fDistance > lastY + fDistance && firstY + fDistance > lastY + fDistance)
+		return false;
+	if (firstZ - fDistance > lastZ + fDistance && firstZ + fDistance > lastZ + fDistance)
+		return false;*/
+	return true;
+}
+
 
 void UpdatePlayer() {
+	bool flag = false;
 	for (int id = 0;id < 3;++id) {
+		if (g_Players[id]->bCatched == -1) {
+			for (int i = 0;i < 9;++i) {
+				flag = Collision(g_Players[id]->transX, g_Players[id]->transY, g_Players[id]->transZ,
+					fTransX[i], 0, fTransZ[i]);
+				if (flag) {
+					g_Players[id]->bCatched = i;
+				}
+			}
+		}
+		else {
+			fTransX[g_Players[id]->bCatched] = g_Players[id]->transX;
+			fTransY[g_Players[id]->bCatched] = g_Players[id]->transY + 0.2f;
+			fTransZ[g_Players[id]->bCatched] = g_Players[id]->transZ;
+		}
 		if (g_Players[id]->bFowardKeyDown) {
 			g_Players[id]->transX -= 0.03f * sin(g_Players[id]->rotateY * atan(1) * 4 / 180);
 			g_Players[id]->transZ -= 0.03f * cos(g_Players[id]->rotateY * atan(1) * 4 / 180);

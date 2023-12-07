@@ -51,6 +51,7 @@ class Player : public GameObject {
 public:
     char type;
     bool bFowardKeyDown{false}, bBackKeyDown{ false }, bLeftKeyDown{ false }, bRightKeyDown{ false };
+    int bCatched{ -1 };
     Player();
     ~Player();
 };
